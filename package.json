@@ -7,6 +7,10 @@
   },
   "author": "Marius Ursache <marius@tabletcommand.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/bamse16/tabletcommand-middleware.git"
+  },
   "dependencies": {
     "debug": "~2.2.0",
     "lodash": "^3.10.1",
@@ -18,7 +22,7 @@
   "devDependencies": {
     "eyes": "*",
     "factory-lady": "~0.1.0",
-    "mocha": "~2.4.5",
+    "mocha": "^2.5.3",
     "chai": "~3.5.0"
   }
 }
