@@ -1,0 +1,24 @@
+{
+  "name": "tabletcommand-middleware",
+  "version": "1.0.0",
+  "description": "Tablet Command Middleware and utils",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha test/*"
+  },
+  "author": "Marius Ursache <marius@tabletcommand.com>",
+  "license": "MIT",
+  "dependencies": {
+    "debug": "~2.2.0",
+    "lodash": "^3.10.1",
+    "mongoose": "^4.1.10",
+    "moment-timezone": "^0.3.0",
+    "node-uuid": "^1.4.3",
+    "redis": "~2.4.2"
+  },
+  "devDependencies": {
+    "eyes": "*",
+    "factory-lady": "~0.1.0",
+    "mocha": "~2.4.5",
+    "chai": "~3.5.0"
+  }
+}
