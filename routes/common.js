@@ -17,6 +17,17 @@ var auth = function(req, res, next){
   return next();
 };
 
+var authSuper = function(req, res, next){
+  var shouldAllow = _.isObject(req.user) && (req.user.superuser === true);
+  if (!shouldAllow) {
+    var err = new Error('Not Authorized');
+    err.status = 401;
+    return next(err);
+  }
+
+  return next();
+};
+
 var notFoundHandler = function(req, res, next) {
   var err = new Error('Not Found');
   err.status = 404;
@@ -51,6 +62,7 @@ var productionErrorHandler = function(err, req, res, next) {
 
 module.exports = {
   auth: auth,
+  authSuper: authSuper,
   notFoundHandler: notFoundHandler,
   notImplementedHandler: notImplementedHandler,
   developmentErrorHandler: developmentErrorHandler,
