@@ -107,7 +107,7 @@ module.exports = function customSession(Department, Session, User){
       apiKey = req.headers.apiKey;
     } else if(_.isObject(req.headers) && _.has(req.headers, 'apikey')) {
       apiKey = req.headers.apikey;
-    } if(_.isObject(req.query) && _.has(req.query, 'apiKey')){
+    } else if(_.isObject(req.query) && _.has(req.query, 'apiKey')) {
       apiKey = req.query.apiKey;
     } else if(_.isObject(req.query) && _.has(req.query, 'apikey')) {
       apiKey = req.query.apikey;

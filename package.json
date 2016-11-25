@@ -1,6 +1,6 @@
 {
   "name": "tabletcommand-middleware",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Tablet Command Middleware and utils",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha test/*"
