@@ -14,6 +14,12 @@ module.exports = function customSession(Department){
   };
 
   var getDepartmentBySignupKey = function(req, res, callback){
+    // Bail if req.department was already set
+    // by a different middleware
+    if (_.isObject(req.department) && _.size(req.department) > 0) {
+      return callback(null, req.department);
+    }
+
     var signupKey = '';
     if(_.isObject(req.query)) {
       if(_.has(req.query, 'signupKey')) {
