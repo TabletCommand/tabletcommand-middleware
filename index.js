@@ -8,9 +8,9 @@ var helpers = require('./lib/helpers');
 var routesCommon = require('./routes/common');
 
 module.exports = {
-	session: session,
-	signupSession: signupSession,
-	redis: redis,
-	helpers: helpers,
-	routesCommon: routesCommon
+  session: session,
+  signupSession: signupSession,
+  redis: redis,
+  helpers: helpers,
+  routesCommon: routesCommon
 };

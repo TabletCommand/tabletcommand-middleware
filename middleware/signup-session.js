@@ -1,11 +1,11 @@
 /* jslint node: true */
 "use strict";
 
-module.exports = function customSession(Department){
+module.exports = function customSession(Department) {
   var _ = require('lodash');
 
-  var departmentForLogging = function(department){
-    if(!_.isObject(department)){
+  var departmentForLogging = function(department) {
+    if (!_.isObject(department)) {
       return {};
     }
 
@@ -13,7 +13,7 @@ module.exports = function customSession(Department){
     return JSON.parse(JSON.stringify(item)); // Force convert the item to JSON
   };
 
-  var getDepartmentBySignupKey = function(req, res, callback){
+  var getDepartmentBySignupKey = function(req, res, callback) {
     // Bail if req.department was already set
     // by a different middleware
     if (_.isObject(req.department) && _.size(req.department) > 0) {
@@ -21,15 +21,15 @@ module.exports = function customSession(Department){
     }
 
     var signupKey = '';
-    if(_.isObject(req.query)) {
-      if(_.has(req.query, 'signupKey')) {
+    if (_.isObject(req.query)) {
+      if (_.has(req.query, 'signupKey')) {
         signupKey = req.query.signupKey;
       } else if (_.has(req.query, 'signupkey')) {
         signupKey = req.query.signupkey;
       }
     }
 
-    if(signupKey === ''){
+    if (signupKey === '') {
       return callback(null, null);
     }
 
@@ -38,12 +38,12 @@ module.exports = function customSession(Department){
       signupKey: signupKey
     };
 
-    return Department.findOne(query, function(err, dbObject){
-      if(err){
+    return Department.findOne(query, function(err, dbObject) {
+      if (err) {
         console.log('err retrieving department by user', err);
       }
 
-      if(_.isObject(dbObject) && _.size(dbObject) > 0){
+      if (_.isObject(dbObject) && _.size(dbObject) > 0) {
         req.department = dbObject.toObject();
         req.departmentLog = departmentForLogging(dbObject.toJSON());
       }
@@ -52,8 +52,8 @@ module.exports = function customSession(Department){
     });
   };
 
-  return function(req, res, next){
-    return getDepartmentBySignupKey(req, res, function(err, department){
+  return function(req, res, next) {
+    return getDepartmentBySignupKey(req, res, function(err, department) {
       return next();
     });
   };
