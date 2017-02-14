@@ -4,7 +4,7 @@
 module.exports = function customSession(Department) {
   var _ = require('lodash');
 
-  var departmentForLogging = function(department) {
+  var departmentForLogging = function departmentForLogging(department) {
     if (!_.isObject(department)) {
       return {};
     }
@@ -13,7 +13,7 @@ module.exports = function customSession(Department) {
     return JSON.parse(JSON.stringify(item)); // Force convert the item to JSON
   };
 
-  var getDepartmentBySignupKey = function(req, res, callback) {
+  var getDepartmentBySignupKey = function getDepartmentBySignupKey(req, res, callback) {
     // Bail if req.department was already set
     // by a different middleware
     if (_.isObject(req.department) && _.size(req.department) > 0) {
@@ -38,7 +38,7 @@ module.exports = function customSession(Department) {
       signupKey: signupKey
     };
 
-    return Department.findOne(query, function(err, dbObject) {
+    return Department.findOne(query, function findDepartmentCallback(err, dbObject) {
       if (err) {
         console.log('err retrieving department by user', err);
       }
@@ -52,8 +52,8 @@ module.exports = function customSession(Department) {
     });
   };
 
-  return function(req, res, next) {
-    return getDepartmentBySignupKey(req, res, function(err, department) {
+  return function customSessionCallback(req, res, next) {
+    return getDepartmentBySignupKey(req, res, function getDepartmentBySignupKeyCallback(err, department) {
       return next();
     });
   };

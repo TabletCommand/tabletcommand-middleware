@@ -4,7 +4,7 @@
 module.exports = function customSession(Department, Session, User) {
   var _ = require('lodash');
 
-  var departmentForLogging = function(department) {
+  var departmentForLogging = function departmentForLogging(department) {
     if (!_.isObject(department)) {
       return {};
     }
@@ -13,7 +13,7 @@ module.exports = function customSession(Department, Session, User) {
     return JSON.parse(JSON.stringify(item)); // Force convert the item to JSON
   };
 
-  var getSession = function(req, res, callback) {
+  var getSession = function getSession(req, res, callback) {
     if (!_.isObject(req.cookies) || !_.isString(req.cookies['seneca-login'])) {
       return callback(null, null);
     }
@@ -22,7 +22,7 @@ module.exports = function customSession(Department, Session, User) {
     query.token = req.cookies['seneca-login'];
     query.active = true;
 
-    return Session.findOne(query, function(err, dbObject) {
+    return Session.findOne(query, function findSessionCallback(err, dbObject) {
       if (err) {
         console.log('err retrieving session', err);
       }
@@ -36,7 +36,7 @@ module.exports = function customSession(Department, Session, User) {
     });
   };
 
-  var getUser = function(req, res, callback) {
+  var getUser = function getUser(req, res, callback) {
     if (!_.isObject(req.login)) {
       return callback(null, null);
     }
@@ -50,7 +50,7 @@ module.exports = function customSession(Department, Session, User) {
     query._id = session.user;
     query.active = true;
 
-    return User.findOne(query, function(err, dbObject) {
+    return User.findOne(query, function findUserCallback(err, dbObject) {
       if (err) {
         console.log('err retrieving user', err);
       }
@@ -63,7 +63,7 @@ module.exports = function customSession(Department, Session, User) {
     });
   };
 
-  var getDepartmentByUser = function(req, res, callback) {
+  var getDepartmentByUser = function getDepartmentByUser(req, res, callback) {
     if (!_.isObject(req.user)) {
       return callback(null, null);
     }
@@ -87,7 +87,7 @@ module.exports = function customSession(Department, Session, User) {
       return callback(null, null);
     }
 
-    return Department.findById(departmentId, function(err, dbObject) {
+    return Department.findById(departmentId, function findDepartmentCallback(err, dbObject) {
       if (err) {
         console.log('err retrieving department by user', err);
       }
@@ -101,7 +101,7 @@ module.exports = function customSession(Department, Session, User) {
     });
   };
 
-  var getDepartmentByApiKey = function(req, res, callback) {
+  var getDepartmentByApiKey = function getDepartmentByApiKey(req, res, callback) {
     var apiKey = '';
     if (_.isObject(req.headers) && _.has(req.headers, 'apiKey')) {
       apiKey = req.headers.apiKey;
@@ -122,7 +122,7 @@ module.exports = function customSession(Department, Session, User) {
       active: true
     };
 
-    return Department.findOne(query, function(err, dbObject) {
+    return Department.findOne(query, function findDepartmentByApiKeyCallback(err, dbObject) {
       if (err) {
         console.log('err retrieving department by user', err);
       }
@@ -137,15 +137,15 @@ module.exports = function customSession(Department, Session, User) {
   };
 
   return function(req, res, next) {
-    return getDepartmentByApiKey(req, res, function(err, department) {
+    return getDepartmentByApiKey(req, res, function getDepartmentByApiKeyCallback(err, department) {
       if (!_.isNull(department) && _.size(department) > 0) {
         return next();
       }
 
       // Trying to resolve using a session cookie
-      return getSession(req, res, function(err, session) {
-        return getUser(req, res, function(err, user) {
-          return getDepartmentByUser(req, res, function(err, department) {
+      return getSession(req, res, function getSessionCallback(err, session) {
+        return getUser(req, res, function getUserCallback(err, user) {
+          return getDepartmentByUser(req, res, function getDepartmentByUserCallback(err, department) {
             return next();
           });
         });
