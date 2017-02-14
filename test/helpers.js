@@ -38,4 +38,63 @@ describe("Helpers", function() {
 
     return done();
   });
+
+  it("isAdmin", function(done) {
+    var at = {
+      admin: true
+    };
+    assert.isTrue(helpers.isAdmin(at));
+
+    var a1 = {
+      admin: 1
+    };
+    assert.isTrue(helpers.isAdmin(a1));
+
+    var a1s = {
+      admin: "1"
+    };
+    assert.isTrue(helpers.isAdmin(a1s));
+
+    var af = {
+      admin: "false"
+    };
+    assert.isFalse(helpers.isAdmin(af));
+
+    var a0 = {
+      admin: 0
+    };
+    assert.isFalse(helpers.isAdmin(a0));
+
+    var e = {};
+    assert.isFalse(helpers.isAdmin(e));
+
+    return done();
+  });
+
+  it("isSuper", function(done) {
+    var sa = {
+      superuser: 1
+    };
+    assert.isTrue(helpers.isSuper(sa));
+
+    var sf = {
+      superuser: 0
+    };
+    assert.isFalse(helpers.isSuper(sf));
+
+    return done();
+  });
+
+  it("isActive", function(done) {
+    var a = {
+      active: true
+    };
+    assert.isTrue(helpers.isActive(a));
+
+    var i = {
+      active: "false"
+    };
+    assert.isFalse(helpers.isActive(i));
+    return done();
+  });
 });
