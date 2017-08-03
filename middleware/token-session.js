@@ -2,7 +2,7 @@
 "use strict";
 
 module.exports = function tokenSession(allowedTokens) {
-  var _ = require('lodash');
+  var _ = require("lodash");
 
   var buildAllowedItems = function buildAllowedItems(items, callback) {
     if (!_.isArray(items)) {
@@ -14,9 +14,9 @@ module.exports = function tokenSession(allowedTokens) {
         active: false,
         admin: true,
         outsider: true,
-        username: '',
-        token: '',
-        email: ''
+        username: "",
+        token: "",
+        email: ""
       };
 
       if (_.isString(item.token)) {
@@ -40,10 +40,11 @@ module.exports = function tokenSession(allowedTokens) {
     return callback(null, filtered);
   };
 
-  var validateToken = function validateToken(tokens, req, res, next) {
+  var validateToken = function validateToken(err, tokens, req, res, next) {
     var token = "";
-    if (_.has(req.headers, 'x-tc-auth-token') && _.isString(req.headers['x-tc-auth-token'])) {
-      token = _.trim(req.headers['x-tc-auth-token']);
+    if (_.has(req.headers, "x-tc-auth-token") &&
+      _.isString(req.headers["x-tc-auth-token"])) {
+      token = _.trim(req.headers["x-tc-auth-token"]);
     }
 
     var foundUsers = _.filter(tokens, function filterCallback(item) {
@@ -54,12 +55,12 @@ module.exports = function tokenSession(allowedTokens) {
       req.user = foundUsers[0];
     }
 
-    return next();
+    return next(err);
   };
 
   return function tokenSessionCallback(req, res, next) {
     return buildAllowedItems(allowedTokens, function buildAllowedItemsCallback(err, tokens) {
-      return validateToken(tokens, req, res, next);
+      return validateToken(err, tokens, req, res, next);
     });
   };
 };

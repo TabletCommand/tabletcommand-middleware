@@ -2,14 +2,16 @@
 "use strict";
 
 module.exports = function customSession(Department) {
-  var _ = require('lodash');
+  var _ = require("lodash");
 
   var departmentForLogging = function departmentForLogging(department) {
     if (!_.isObject(department)) {
       return {};
     }
 
-    var item = _.pick(_.clone(department), ['_id', 'id', 'department', 'cadBidirectionalEnabled']);
+    var item = _.pick(_.clone(department), [
+      "_id", "id", "department", "cadBidirectionalEnabled"
+    ]);
     return JSON.parse(JSON.stringify(item)); // Force convert the item to JSON
   };
 
@@ -20,16 +22,16 @@ module.exports = function customSession(Department) {
       return callback(null, req.department);
     }
 
-    var signupKey = '';
+    var signupKey = "";
     if (_.isObject(req.query)) {
-      if (_.has(req.query, 'signupKey')) {
+      if (_.has(req.query, "signupKey")) {
         signupKey = req.query.signupKey;
-      } else if (_.has(req.query, 'signupkey')) {
+      } else if (_.has(req.query, "signupkey")) {
         signupKey = req.query.signupkey;
       }
     }
 
-    if (signupKey === '') {
+    if (signupKey === "") {
       return callback(null, null);
     }
 
@@ -39,10 +41,6 @@ module.exports = function customSession(Department) {
     };
 
     return Department.findOne(query, function findDepartmentCallback(err, dbObject) {
-      if (err) {
-        console.log('err retrieving department by user', err);
-      }
-
       if (_.isObject(dbObject) && _.size(dbObject) > 0) {
         req.department = dbObject.toObject();
         req.departmentLog = departmentForLogging(dbObject.toJSON());
@@ -54,7 +52,7 @@ module.exports = function customSession(Department) {
 
   return function customSessionCallback(req, res, next) {
     return getDepartmentBySignupKey(req, res, function getDepartmentBySignupKeyCallback(err, department) {
-      return next();
+      return next(err);
     });
   };
 };

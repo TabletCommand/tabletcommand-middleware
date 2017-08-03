@@ -1,32 +1,29 @@
-/* jslint node: true */
 "use strict";
 
 module.exports = function customSession(Department, Session, User) {
-  var _ = require('lodash');
+  var _ = require("lodash");
 
   var departmentForLogging = function departmentForLogging(department) {
     if (!_.isObject(department)) {
       return {};
     }
 
-    var item = _.pick(_.clone(department), ['_id', 'id', 'department', 'cadBidirectionalEnabled']);
+    var item = _.pick(_.clone(department), [
+      "_id", "id", "department", "cadBidirectionalEnabled"
+    ]);
     return JSON.parse(JSON.stringify(item)); // Force convert the item to JSON
   };
 
   var getSession = function getSession(req, res, callback) {
-    if (!_.isObject(req.cookies) || !_.isString(req.cookies['seneca-login'])) {
+    if (!_.isObject(req.cookies) || !_.isString(req.cookies["seneca-login"])) {
       return callback(null, null);
     }
 
     var query = {};
-    query.token = req.cookies['seneca-login'];
+    query.token = req.cookies["seneca-login"];
     query.active = true;
 
     return Session.findOne(query, function findSessionCallback(err, dbObject) {
-      if (err) {
-        console.log('err retrieving session', err);
-      }
-
       if (_.isObject(dbObject) && _.size(dbObject) > 0) {
         req.login = dbObject.toObject();
         req.session = dbObject.toObject();
@@ -51,10 +48,6 @@ module.exports = function customSession(Department, Session, User) {
     query.active = true;
 
     return User.findOne(query, function findUserCallback(err, dbObject) {
-      if (err) {
-        console.log('err retrieving user', err);
-      }
-
       if (_.isObject(dbObject) && _.size(dbObject) > 0) {
         req.user = dbObject.toObject();
       }
@@ -70,11 +63,11 @@ module.exports = function customSession(Department, Session, User) {
 
     var user = req.user;
     var departmentId = user.departmentId;
-    var noUserDepartmentId = (!_.isString(departmentId) || departmentId === '');
+    var noUserDepartmentId = (!_.isString(departmentId) || departmentId === "");
     var isSuperUser = (user.superuser === true ||
-      user.superuser === 'true' ||
+      user.superuser === "true" ||
       user.superuser === 1 ||
-      user.superuser === '1'
+      user.superuser === "1"
     );
 
     var noQueryDepartmentId = true;
@@ -88,10 +81,6 @@ module.exports = function customSession(Department, Session, User) {
     }
 
     return Department.findById(departmentId, function findDepartmentCallback(err, dbObject) {
-      if (err) {
-        console.log('err retrieving department by user', err);
-      }
-
       if (_.isObject(dbObject) && _.size(dbObject) > 0) {
         req.department = dbObject.toObject();
         req.departmentLog = departmentForLogging(dbObject.toJSON());
@@ -102,18 +91,18 @@ module.exports = function customSession(Department, Session, User) {
   };
 
   var getDepartmentByApiKey = function getDepartmentByApiKey(req, res, callback) {
-    var apiKey = '';
-    if (_.isObject(req.headers) && _.has(req.headers, 'apiKey')) {
+    var apiKey = "";
+    if (_.isObject(req.headers) && _.has(req.headers, "apikey")) {
       apiKey = req.headers.apiKey;
-    } else if (_.isObject(req.headers) && _.has(req.headers, 'apikey')) {
+    } else if (_.isObject(req.headers) && _.has(req.headers, "apikey")) {
       apiKey = req.headers.apikey;
-    } else if (_.isObject(req.query) && _.has(req.query, 'apiKey')) {
+    } else if (_.isObject(req.query) && _.has(req.query, "apikey")) {
       apiKey = req.query.apiKey;
-    } else if (_.isObject(req.query) && _.has(req.query, 'apikey')) {
+    } else if (_.isObject(req.query) && _.has(req.query, "apikey")) {
       apiKey = req.query.apikey;
     }
 
-    if (apiKey === '') {
+    if (apiKey === "") {
       return callback(null, null);
     }
 
@@ -123,10 +112,6 @@ module.exports = function customSession(Department, Session, User) {
     };
 
     return Department.findOne(query, function findDepartmentByApiKeyCallback(err, dbObject) {
-      if (err) {
-        console.log('err retrieving department by user', err);
-      }
-
       if (_.isObject(dbObject) && _.size(dbObject) > 0) {
         req.department = dbObject.toObject();
         req.departmentLog = departmentForLogging(dbObject.toJSON());
@@ -139,14 +124,20 @@ module.exports = function customSession(Department, Session, User) {
   return function(req, res, next) {
     return getDepartmentByApiKey(req, res, function getDepartmentByApiKeyCallback(err, department) {
       if (!_.isNull(department) && _.size(department) > 0) {
-        return next();
+        return next(err);
       }
 
       // Trying to resolve using a session cookie
       return getSession(req, res, function getSessionCallback(err, session) {
+        if (err) {
+          return next(err);
+        }
         return getUser(req, res, function getUserCallback(err, user) {
+          if (err) {
+            return next(err);
+          }
           return getDepartmentByUser(req, res, function getDepartmentByUserCallback(err, department) {
-            return next();
+            return next(err);
           });
         });
       });

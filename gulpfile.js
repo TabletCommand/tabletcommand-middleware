@@ -8,10 +8,11 @@ gulp.task("default", ["lint", "test"]);
 
 gulp.task("lint", function() {
   const sources = [
-    "*.js"
-    // "bin/*.js",
-    // "lib/*.js",
-    // "test/*.js"
+    "*.js",
+    "lib/*.js",
+    "middleware/*.js",
+    "routes/*.js",
+    "test/*.js"
   ];
   return gulp.src(sources)
     .pipe(eslint())

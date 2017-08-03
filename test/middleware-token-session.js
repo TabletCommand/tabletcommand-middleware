@@ -1,16 +1,14 @@
-/* jslint node: true */
 "use strict";
 
 var _ = require("lodash");
 var assert = require("chai").assert;
 
-var helpers = require("../index").helpers;
 var tokenSession = require("../index").tokenSession;
 
 describe("Token Session", function() {
   it("sets correct user", function(done) {
     var testToken = "abcd";
-    var testUsername = "test-abcd"
+    var testUsername = "test-abcd";
 
     var req = {
       headers: {
