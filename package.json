@@ -1,9 +1,9 @@
 {
   "name": "tabletcommand-middleware",
-  "version": "2.3.2",
+  "version": "2.4.0",
   "description": "Tablet Command Middleware and utils",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha test/*"
+    "test": "./node_modules/gulp/bin/gulp.js"
   },
   "author": "Marius Ursache <marius@tabletcommand.com>",
   "license": "MIT",
@@ -12,28 +12,28 @@
     "url": "git://github.com/bamse16/tabletcommand-middleware.git"
   },
   "dependencies": {
-    "debug": "~2.2.0",
-    "lodash": "^3.10.1",
-    "moment-timezone": "^0.3.0",
+    "debug": "^2.6.8",
+    "lodash": "^4.17.4",
+    "moment-timezone": "^0.5.13",
     "mongoose": "^4.1.10",
-    "node-uuid": "^1.4.3",
     "redis": "^2.4.2",
     "request": "^2.79.0"
   },
   "devDependencies": {
-    "chai": "~3.5.0",
-    "eyes": "*",
-    "eslint": "^3.18.0",
-    "eslint-config-standard": "^7.1.0",
+    "chai": "^4.1.0",
+    "eslint": "^4.3.0",
+    "eslint-config-standard": "^10.2.1",
     "eslint-plugin-import": "^2.2.0",
     "eslint-plugin-mocha-only": "0.0.3",
+    "eslint-plugin-node": "^5.1.1",
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-security": "^1.3.0",
-    "eslint-plugin-standard": "^2.1.1",
-    "gulp": "^3.9.1",
-    "gulp-eslint": "^3.0.1",
-    "gulp-mocha": "^4.2.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "eyes": "*",
     "factory-lady": "~0.1.0",
+    "gulp": "^3.9.1",
+    "gulp-eslint": "^4.0.0",
+    "gulp-mocha": "^4.2.0",
     "mocha": "^3.2.0"
   }
 }
