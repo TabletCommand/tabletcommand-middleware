@@ -1,6 +1,6 @@
 {
   "name": "tabletcommand-middleware",
-  "version": "2.5.2",
+  "version": "3.0.0",
   "description": "Tablet Command Middleware and utils",
   "scripts": {
     "test": "./node_modules/gulp/bin/gulp.js"
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "debug": "^2.6.8",
+    "express-statsd": "^0.3.0",
     "lodash": "^4.17.4",
     "moment-timezone": "^0.5.13",
     "mongoose": "^4.1.10",
