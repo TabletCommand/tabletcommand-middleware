@@ -11,11 +11,14 @@ const monitorRequest = expressStatsd();
 
 module.exports = function metricsModule(filterFunction) {
   var defaultFilter = function defaultFilter(path, callback) {
-    const uuidRegexp = /[-a-f\d]{36}/i;
-    if (path.match(uuidRegexp)) {
+    const uuidRegex = /[-a-f\d]{36}/i;
+    const mongoIdRegex = /[a-f\d]{24}/i;
+    if (path.match(uuidRegex) || path.match(mongoIdRegex)) {
       let parts = path.split(".");
       const cleanParts = parts.filter(function(part) {
-        return !part.match(uuidRegexp);
+        const isUUID = part.match(uuidRegex);
+        const isMongoId = part.match(mongoIdRegex);
+        return !(isUUID || isMongoId);
       });
       path = cleanParts.join(".");
     }

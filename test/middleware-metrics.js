@@ -21,6 +21,14 @@ describe("Metrics Middleware", function() {
     });
   });
 
+  it("removes mongo id from middle of paths", function(done) {
+    const path = "api.online.515a41a3e0387575cc939002.status";
+    return metrics.defaultFilter(path, function(cleanPath) {
+      assert.equal(cleanPath, "api.online.status");
+      return done();
+    });
+  });
+
   it("skips paths without uuid", function(done) {
     const path = "api.user.profile";
     return metrics.defaultFilter(path, function(cleanPath) {
