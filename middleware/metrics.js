@@ -9,7 +9,7 @@ const monitorRequest = expressStatsd();
 // Add an express-statsd key that looks like http.post.api.hello.world for a HTTP POST to /api/hello/world URL
 // See https://github.com/uber/express-statsd
 
-module.exports = function statsdModule(filterFunction) {
+module.exports = function metricsModule(filterFunction) {
   var defaultFilter = function defaultFilter(path, callback) {
     const uuidRegexp = /[-a-f\d]{36}/i;
     if (path.match(uuidRegexp)) {

@@ -2,7 +2,7 @@
 
 var session = require("./middleware/custom-session");
 var signupSession = require("./middleware/signup-session");
-var statsd = require("./middleware/statsd");
+var metrics = require("./middleware/metrics");
 var tokenSession = require("./middleware/token-session");
 
 var redis = require("./lib/redis");
@@ -12,7 +12,7 @@ var routesCommon = require("./routes/common");
 module.exports = {
   session: session,
   signupSession: signupSession,
-  statsd: statsd,
+  metrics: metrics,
   tokenSession: tokenSession,
 
   redis: redis,
