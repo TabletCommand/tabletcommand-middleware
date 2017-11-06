@@ -4,8 +4,9 @@
 
 module.exports = function(mockgoose, mongoose, models, redisClient) {
   const apiKey = "secretapikey1990";
+  const departmentId = "5195426cc4e016a988000965";
   const d = {
-    "_id": mongoose.Types.ObjectId(),
+    "_id": departmentId,
     "signupDomains": [],
     "signupKey": "abcd",
     "incidentTypes": [],
@@ -28,15 +29,35 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
     "modified_date": "2017-04-21T03:00:03.514"
   };
 
+  const userId = "535633c3c0384d0000002082";
   const token = "10b73460-90cd-4191-b27f-27e89067d8f5";
   const s = {
     "_id": token,
     "nick": "test",
     "email": "test@example.com",
-    "user": "535633c3c0384d0000002082",
+    "user": userId,
     "when": "2017-11-03T04:57:06.596Z",
     "active": true,
     "token": token
+  };
+
+  const u = {
+    "_id": userId,
+    "nick": "test",
+    "email": "test@example.com",
+    "name": "Test (Tablet Command)",
+    "active": true,
+    "when": "2014-04-22T09:17:54.783Z",
+    "departmentId": departmentId,
+    "salt": "salt",
+    "pass": "password",
+    "admin": true,
+    "mapHidden": false,
+    "mapId": "TEST",
+    "rtsAuthKey": "abc1234AuthKey",
+    "outsider": true,
+    "remoteLoggingEnabled": false,
+    "isPro": true
   };
 
   const prepareTestData = function prepareTestData(callback) {
@@ -48,7 +69,14 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
 
       let testSession = models.Session(s);
       testSession.save(function(err, result) {
-        return callback(err, result);
+        if (err) {
+          return callback(err);
+        }
+
+        let testUser = models.User(u);
+        testUser.save(function(err, result) {
+          return callback(err, result);
+        });
       });
     });
   };
@@ -78,6 +106,7 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
     token: token,
     department: d,
     session: s,
+    user: u,
 
     prepareTestData: prepareTestData,
     beforeEach: beforeEach,
