@@ -98,8 +98,24 @@ describe("Store", function() {
         assert.isObject(session);
         assert.isObject(user);
         assert.isObject(department);
-        assert.isFalse(cached);
+        assert.isFalse(cached, "Object should not be cached");
         return done();
+      });
+    });
+
+    it("gets session from redis", function(done) {
+      return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
+        assert.isNull(err);
+        assert.isFalse(cached);
+
+        return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
+          assert.isNull(err);
+          assert.isObject(session);
+          assert.isObject(user);
+          assert.isObject(department);
+          assert.isTrue(cached, "Object should be cached");
+          return done();
+        });
       });
     });
   });
