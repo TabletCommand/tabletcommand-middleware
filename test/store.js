@@ -48,30 +48,25 @@ const prepareTestData = function prepareTestData(callback) {
   });
 };
 
-before(function(done) {
-  mockgoose.prepareStorage().then(function() {
-    mongoose.connect("mongodb://127.0.0.1:27017/TestingDB", {
-      // useMongoClient: true // this option silents the warning, but does not cleanup the data
-    }, function(err) {
-      prepareTestData(function() {
-        done(err);
+describe("Store", function() {
+  beforeEach(function(done) {
+    mockgoose.prepareStorage().then(function() {
+      mongoose.connect("mongodb://127.0.0.1:27017/TestingDB", {
+        useMongoClient: true // this option silents the warning, but does not cleanup the data
+      }, function(err) {
+        prepareTestData(function() {
+          done(err);
+        });
       });
     });
   });
-});
 
-after(function(done) {
-  mockgoose.helper.reset().then(function() {
-    done();
-  });
-});
-
-describe("Store", function() {
-  beforeEach(function(done) {
-    return done();
-  });
   afterEach(function(done) {
-    return done();
+    mockgoose.helper.reset().then(function() {
+      redisClient.flushall(function() {
+        done();
+      });
+    });
   });
 
   it("isMocked", (done) => {
@@ -79,11 +74,60 @@ describe("Store", function() {
     done();
   });
 
-  it("sets correct user", function(done) {
-    return store.findDepartmentByApiKey(testApiKey, function(err, result) {
-      console.log("Err", err, result);
-      assert.isTrue(true);
+  it("gets department from database", function(done) {
+    return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+      assert.isNull(err);
+      assert.isObject(item);
+      assert.isFalse(cached);
       return done();
     });
+  });
+
+  it("gets department from cache", function(done) {
+    return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+      assert.isNull(err);
+      assert.isFalse(cached, "First call, it is not cached");
+
+      return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+        assert.isNull(err);
+        assert.isObject(item);
+        assert.isTrue(cached, "Second call, it is cached");
+        return done();
+      });
+    });
+  });
+
+  it("gets department from database, when redis is expired", function(done) {
+    // Cache the item to redis
+    return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+      assert.isNull(err);
+      assert.isFalse(cached, "First call, it is not cached");
+
+      // Item is cached to redis
+      return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+        assert.isNull(err);
+        assert.isObject(item);
+        assert.isTrue(cached, "Second call, it is cached");
+
+        return store.expireDepartmentByApiKey(testApiKey, function(err, item) {
+          assert.isNull(err);
+
+          return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+            assert.isNull(err);
+            assert.isFalse(cached, "Call after expired, it is not cached");
+
+            // Item is cached to redis
+            return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+              assert.isNull(err);
+              assert.isObject(item);
+              assert.isTrue(cached, "Call again, it is cached");
+
+              return done();
+            });
+          });
+        });
+      });
+    });
+
   });
 });
