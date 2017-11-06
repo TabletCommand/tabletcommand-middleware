@@ -17,6 +17,7 @@ const store = require("../lib/store")(models.Department, models.Session, models.
 const data = require("./data")(mockgoose, mongoose, models, redisClient);
 
 const testApiKey = data.apiKey;
+const testToken = data.token;
 
 describe("Store", function() {
   beforeEach(function(done) {
@@ -32,58 +33,71 @@ describe("Store", function() {
     done();
   });
 
-  it("gets department from database", function(done) {
-    return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-      assert.isNull(err);
-      assert.isObject(item);
-      assert.isFalse(cached);
-      return done();
-    });
-  });
-
-  it("gets department from cache", function(done) {
-    return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-      assert.isNull(err);
-      assert.isFalse(cached, "First call, it is not cached");
-
+  context("findDepartmentByApiKey", function() {
+    it("gets department from database", function(done) {
       return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
         assert.isNull(err);
         assert.isObject(item);
-        assert.isTrue(cached, "Second call, it is cached");
+        assert.isFalse(cached);
         return done();
+      });
+    });
+
+    it("gets department from cache", function(done) {
+      return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+        assert.isNull(err);
+        assert.isFalse(cached, "First call, it is not cached");
+
+        return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+          assert.isNull(err);
+          assert.isObject(item);
+          assert.isTrue(cached, "Second call, it is cached");
+          return done();
+        });
+      });
+    });
+
+    it("gets department from database, when redis is expired", function(done) {
+      // Cache the item to redis
+      return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+        assert.isNull(err);
+        assert.isFalse(cached, "First call, it is not cached");
+
+        // Item is cached to redis
+        return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+          assert.isNull(err);
+          assert.isObject(item);
+          assert.isTrue(cached, "Second call, it is cached");
+
+          return store.expireDepartmentByApiKey(testApiKey, function(err, item) {
+            assert.isNull(err);
+
+            return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+              assert.isNull(err);
+              assert.isFalse(cached, "Call after expired, it is not cached");
+
+              // Item is cached to redis
+              return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+                assert.isNull(err);
+                assert.isObject(item);
+                assert.isTrue(cached, "Call again, it is cached");
+
+                return done();
+              });
+            });
+          });
+        });
       });
     });
   });
 
-  it("gets department from database, when redis is expired", function(done) {
-    // Cache the item to redis
-    return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-      assert.isNull(err);
-      assert.isFalse(cached, "First call, it is not cached");
-
-      // Item is cached to redis
-      return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
+  context("findSessionByToken", function() {
+    it("gets session from database", function(done) {
+      return store.findSessionByToken(testToken, function(err, item, cached) {
         assert.isNull(err);
         assert.isObject(item);
-        assert.isTrue(cached, "Second call, it is cached");
-
-        return store.expireDepartmentByApiKey(testApiKey, function(err, item) {
-          assert.isNull(err);
-
-          return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-            assert.isNull(err);
-            assert.isFalse(cached, "Call after expired, it is not cached");
-
-            // Item is cached to redis
-            return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-              assert.isNull(err);
-              assert.isObject(item);
-              assert.isTrue(cached, "Call again, it is cached");
-
-              return done();
-            });
-          });
-        });
+        assert.isFalse(cached);
+        return done();
       });
     });
   });
