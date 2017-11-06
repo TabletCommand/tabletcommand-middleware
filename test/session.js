@@ -13,9 +13,10 @@ let mockgoose = new Mockgoose(mongoose);
 
 const redisClient = require("redis-js");
 
-const store = require("../lib/store")(models.Department, redisClient);
+const store = require("../lib/store")(models.Department, models.Session, models.User, redisClient);
 const data = require("./data")(mockgoose, mongoose, models, redisClient);
 const testApiKey = data.apiKey;
+const testToken = data.token;
 
 const session = require("../lib/session")(store);
 
@@ -131,11 +132,70 @@ describe("Session", function() {
 
     it("resolved if token is present", function(done) {
       const testSession = "helloworld";
-      const cookies = {
-        "seneca-login": testSession
-      };
+      const sessionName = session.sessionCookieName;
+      let cookies = {};
+      cookies[sessionName] = testSession;
       session.detectCookieSession(cookies, function(foundSession) {
         assert.equal(foundSession, testSession);
+        done();
+      });
+    });
+  });
+
+  context("authBySenecaCookie", function() {
+    it("not resolved if no session token is present", function(done) {
+      let fakeReq = {};
+      let fakeRes = {};
+      session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
+        assert.isNull(err);
+        assert.isNull(session);
+        assert.isNull(user);
+        assert.isNull(department);
+        assert.isNotObject(fakeReq.session);
+        assert.isNotObject(fakeReq.user);
+        assert.isNotObject(fakeReq.department);
+        done();
+      });
+    });
+
+    it("not resolved if invalid session token", function(done) {
+      let cookies = {};
+      cookies[session.sessionCookieName] = "abcd";
+      let fakeReq = {
+        cookies: cookies
+      };
+      let fakeRes = {};
+      session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
+        assert.isNull(err);
+        assert.isNull(session);
+        assert.isNull(user);
+        assert.isNull(department);
+        assert.isNotObject(fakeReq.session);
+        assert.isNotObject(fakeReq.user);
+        assert.isNotObject(fakeReq.department);
+        done();
+      });
+    });
+
+    it("resolved with correct session token", function(done) {
+      let cookies = {};
+      cookies[session.sessionCookieName] = testToken;
+      let fakeReq = {
+        cookies: cookies
+      };
+      let fakeRes = {};
+      session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
+        assert.isNull(err);
+        assert.isObject(session);
+        assert.isObject(user);
+        assert.isObject(department);
+        assert.isObject(fakeReq.session);
+        assert.isObject(fakeReq.login);
+        assert.isObject(fakeReq.user);
+        assert.isObject(fakeReq.department);
+        assert.equal(data.session.token, testToken);
+        assert.equal(data.user._id, user._id);
+        assert.equal(data.department._id, department._id);
         done();
       });
     });
