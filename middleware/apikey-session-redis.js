@@ -5,7 +5,7 @@ module.exports = function authByApiKeyRedis(Department, redisClient) {
   const session = require("../lib/session")(store);
 
   return function authByApiKeyRedisMiddleware(req, res, next) {
-    return session.authByApiKey(req, res, function authByApiKeyCallback(err, department) {
+    return session.authByApiKey(req, res, function authByApiKeyCallback(err) {
       return next(err);
     });
   };
