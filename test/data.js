@@ -7,6 +7,7 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
   const departmentId = "5195426cc4e016a988000965";
   const d = {
     "_id": departmentId,
+    "department": "Test Department",
     "signupDomains": [],
     "signupKey": "abcd",
     "incidentTypes": [],

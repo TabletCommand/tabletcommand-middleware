@@ -93,9 +93,11 @@ describe("Store", function() {
 
   context("findSessionByToken", function() {
     it("gets session from database", function(done) {
-      return store.findSessionByToken(testToken, function(err, item, cached) {
+      return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
         assert.isNull(err);
-        assert.isObject(item);
+        assert.isObject(session);
+        assert.isObject(user);
+        assert.isObject(department);
         assert.isFalse(cached);
         return done();
       });
