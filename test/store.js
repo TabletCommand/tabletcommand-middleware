@@ -13,7 +13,7 @@ let mockgoose = new Mockgoose(mongoose);
 
 const redisClient = require("redis-js");
 
-const store = require("../lib/store")(models.Department, redisClient);
+const store = require("../lib/store")(models.Department, models.Session, models.User, redisClient);
 const data = require("./data")(mockgoose, mongoose, models, redisClient);
 
 const testApiKey = data.apiKey;

@@ -20,7 +20,6 @@ const testApiKey = data.apiKey;
 const session = require("../lib/session")(store);
 
 describe("Session", function() {
-
   beforeEach(function(done) {
     data.beforeEach(done);
   });
@@ -116,6 +115,27 @@ describe("Session", function() {
         assert.isObject(fakeReq.department);
         assert.deepEqual(department, fakeReq.department);
         assert.equal(data.department.apikey, department.apikey);
+        done();
+      });
+    });
+  });
+
+  context("detectCookieSession", function() {
+    it("not resolved if no token is present", function(done) {
+      const cookies = {};
+      session.detectCookieSession(cookies, function(foundSession) {
+        assert.equal(foundSession, "");
+        done();
+      });
+    });
+
+    it("resolved if token is present", function(done) {
+      const testSession = "helloworld";
+      const cookies = {
+        "seneca-login": testSession
+      };
+      session.detectCookieSession(cookies, function(foundSession) {
+        assert.equal(foundSession, testSession);
         done();
       });
     });

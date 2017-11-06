@@ -1,7 +1,7 @@
 "use strict";
 
-module.exports = function authByApiKeyRedis(Department, redisClient) {
-  const store = require("../lib/store")(Department, redisClient);
+module.exports = function authByApiKeyRedis(Department, Session, User, redisClient) {
+  const store = require("../lib/store")(Department, Session, User, redisClient);
   const session = require("../lib/session")(store);
 
   return function authByApiKeyRedisMiddleware(req, res, next) {
