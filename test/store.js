@@ -118,5 +118,40 @@ describe("Store", function() {
         });
       });
     });
+
+    it("gets session from database, when redis is expired", function(done) {
+      // Cache the item to redis
+      return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
+        assert.isNull(err);
+        assert.isFalse(cached);
+
+        return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
+          assert.isNull(err);
+          assert.isObject(session);
+          assert.isObject(user);
+          assert.isObject(department);
+          assert.isTrue(cached, "Object should be cached");
+
+          return store.expireSessionByToken(testToken, function(err, result) {
+            assert.isNull(err);
+
+            // Testing after item is expired
+            return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
+              assert.isNull(err);
+              assert.isFalse(cached);
+
+              return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
+                assert.isNull(err);
+                assert.isObject(session);
+                assert.isObject(user);
+                assert.isObject(department);
+                assert.isTrue(cached, "Object should be cached");
+                return done();
+              });
+            });
+          });
+        });
+      });
+    });
   });
 });
