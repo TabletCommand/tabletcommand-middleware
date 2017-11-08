@@ -3,7 +3,7 @@
 var _ = require("lodash");
 var assert = require("chai").assert;
 
-var tokenSession = require("../index").tokenSession;
+var tokenSession = require("../index").session.token;
 
 describe("Token Session", function() {
   it("sets correct user", function(done) {
