@@ -13,12 +13,12 @@ let mockgoose = new Mockgoose(mongoose);
 
 const redisClient = require("redis-js");
 
-const store = require("../lib/store")(models.Department, models.Session, models.User, redisClient);
+const store = require("../dist/lib/store")(models.Department, models.Session, models.User, redisClient);
 const data = require("./data")(mockgoose, mongoose, models, redisClient);
 const testApiKey = data.apiKey;
 const testToken = data.token;
 
-const session = require("../lib/session")(store);
+const session = require("../dist/lib/session")(store);
 
 describe("Session", function() {
   beforeEach(function(done) {

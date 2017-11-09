@@ -10,9 +10,9 @@ gulp.task("default", ["lint", "test", "transpile"]);
 gulp.task("lint", function() {
   const sources = [
     "*.js",
-    "lib/**",
-    "middleware/*.js",
-    "routes/*.js",
+    "src/lib/**",
+    "src/middleware/*.js",
+    "src/routes/*.js",
     "test/*.js"
   ];
   return gulp.src(sources)
@@ -36,12 +36,12 @@ gulp.task("test", function() {
 
 gulp.task("transpile", function() {
   const sources = [
-    "middleware/*.js",
-    "lib/**",
-    "routes/*.js"
+    "src/middleware/*.js",
+    "src/lib/**",
+    "src/routes/*.js"
   ];
   const srcOpts = {
-    base: "."
+    base: "src"
   };
   return gulp.src(sources, srcOpts)
     .pipe(babel())
