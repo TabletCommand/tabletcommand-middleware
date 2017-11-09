@@ -5,10 +5,11 @@
 var customSession = require("./middleware/custom-session");
 var signupSession = require("./middleware/signup-session");
 var tokenSession = require("./middleware/token-session");
-var senecaSession = require("./middleware/seneca-session-redis");
-var apiKeySession = require("./middleware/apikey-session-redis");
 
-var metrics = require("./middleware/metrics");
+var distSenecaSession = require("./dist/middleware/seneca-session-redis");
+var distApiKeySession = require("./dist/middleware/apikey-session-redis");
+
+var distMetrics = require("./dist/middleware/metrics");
 var redis = require("./lib/redis");
 var helpers = require("./lib/helpers");
 var routesCommon = require("./routes/common");
@@ -18,10 +19,10 @@ module.exports = {
     legacy: customSession,
     signup: signupSession,
     token: tokenSession,
-    seneca: senecaSession,
-    apiKey: apiKeySession
+    seneca: distSenecaSession,
+    apiKey: distApiKeySession
   },
-  metrics: metrics,
+  metrics: distMetrics,
   redis: redis,
   helpers: helpers,
   routesCommon: routesCommon
