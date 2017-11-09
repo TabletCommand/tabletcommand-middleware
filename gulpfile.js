@@ -3,8 +3,9 @@
 const gulp = require("gulp");
 const eslint = require("gulp-eslint");
 const mocha = require("gulp-mocha");
+const babel = require("gulp-babel");
 
-gulp.task("default", ["lint", "test"]);
+gulp.task("default", ["lint", "test", "transpile"]);
 
 gulp.task("lint", function() {
   const sources = [
@@ -31,4 +32,17 @@ gulp.task("test", function() {
     .pipe(mocha({
       reporter: "list"
     }));
+});
+
+gulp.task("transpile", function() {
+  const sources = [
+    "middleware/*.js",
+    "lib/**"
+  ];
+  const srcOpts = {
+    base: "."
+  };
+  return gulp.src(sources, srcOpts)
+    .pipe(babel())
+    .pipe(gulp.dest("dist"));
 });
