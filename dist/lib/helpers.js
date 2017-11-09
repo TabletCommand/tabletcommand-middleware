@@ -232,9 +232,10 @@ var cleanupUser = function cleanupUser(user) {
 var resolveUser = function resolveUser(args, callback) {
   var hasSeneca = _.isObject(args) && _.isObject(args.req$) && _.isObject(args.req$.seneca);
   var hasSenecaUser = hasSeneca && _.isObject(args.req$.seneca.user);
+  var hasReqUser = _.isObject(args.req$.user);
   var hasArgsUser = _.isObject(args) && _.isObject(args.user);
   var hasHeaders = _.isObject(args.req$) && _.isObject(args.req$.headers);
-  if (!hasSenecaUser && !hasArgsUser) {
+  if (!hasSenecaUser && !hasArgsUser && !hasReqUser) {
     if (hasHeaders) {
       debug("No user. Headers were:", args.req$.headers);
     }
@@ -248,11 +249,15 @@ var resolveUser = function resolveUser(args, callback) {
     resolvedUser = args.req$.seneca.user;
   } else if (hasArgsUser) {
     resolvedUser = args.user;
+  } else if (hasReqUser) {
+    resolvedUser = args.req$.user;
   }
 
   var session = {};
   if (hasSeneca && _.isObject(args.req$.seneca.login)) {
     session = args.req$.seneca.login;
+  } else if (_.isObject(args.req$.session)) {
+    session = args.req$.session;
   }
 
   var userInactive = !itemIsTrue(resolvedUser, "active");

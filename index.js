@@ -2,27 +2,27 @@
 
 // cSpell:words signup apikey
 
-var customSession = require("./middleware/custom-session");
-var signupSession = require("./middleware/signup-session");
-var tokenSession = require("./middleware/token-session");
+var customSession = require("./dist/middleware/custom-session");
+var signupSession = require("./dist/middleware/signup-session");
+var tokenSession = require("./dist/middleware/token-session");
 
-var distSenecaSession = require("./dist/middleware/seneca-session-redis");
-var distApiKeySession = require("./dist/middleware/apikey-session-redis");
+var senecaSession = require("./dist/middleware/seneca-session-redis");
+var apiKeySession = require("./dist/middleware/apikey-session-redis");
 
-var distMetrics = require("./dist/middleware/metrics");
-var redis = require("./lib/redis");
-var helpers = require("./lib/helpers");
-var routesCommon = require("./routes/common");
+var metrics = require("./dist/middleware/metrics");
+var redis = require("./dist/lib/redis");
+var helpers = require("./dist/lib/helpers");
+var routesCommon = require("./dist/routes/common");
 
 module.exports = {
   session: {
     legacy: customSession,
     signup: signupSession,
     token: tokenSession,
-    seneca: distSenecaSession,
-    apiKey: distApiKeySession
+    seneca: senecaSession,
+    apiKey: apiKeySession
   },
-  metrics: distMetrics,
+  metrics: metrics,
   redis: redis,
   helpers: helpers,
   routesCommon: routesCommon

@@ -37,7 +37,8 @@ gulp.task("test", function() {
 gulp.task("transpile", function() {
   const sources = [
     "middleware/*.js",
-    "lib/**"
+    "lib/**",
+    "routes/*.js"
   ];
   const srcOpts = {
     base: "."
