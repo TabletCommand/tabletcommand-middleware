@@ -49,7 +49,9 @@ var redisOnConnect = function redisOnConnect(config, startTime, mongoose, mongoo
   return function redisOnConnectFunc() {
     console.log("Redis connected after " + (new Date() - startTime) + "ms.");
 
-    mongoose.connect(config.mongoUrl);
+    mongoose.connect(config.mongoUrl, {
+      useMongoClient: true
+    });
     mongoose.connection.on("error", mongooseOnError);
     mongoose.connection.on("disconnected", mongooseOnDisconnected);
     mongoose.connection.on("open", mongooseOnOpen(config, startTime));
