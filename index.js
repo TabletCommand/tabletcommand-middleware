@@ -13,6 +13,7 @@ var metrics = require("./dist/middleware/metrics");
 var redis = require("./dist/lib/redis");
 var helpers = require("./dist/lib/helpers");
 var routesCommon = require("./dist/routes/common");
+var start = require("./dist/lib/start");
 
 module.exports = {
   session: {
@@ -25,5 +26,6 @@ module.exports = {
   metrics: metrics,
   redis: redis,
   helpers: helpers,
-  routesCommon: routesCommon
+  routesCommon: routesCommon,
+  start: start
 };
