@@ -10,7 +10,7 @@ gulp.task("default", ["lint", "test", "transpile"]);
 gulp.task("lint", function() {
   const sources = [
     "*.js",
-    "lib/*.js",
+    "lib/**",
     "middleware/*.js",
     "routes/*.js",
     "test/*.js"
