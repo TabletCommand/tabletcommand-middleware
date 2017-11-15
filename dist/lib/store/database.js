@@ -6,7 +6,7 @@ module.exports = function (Department, Session, User) {
   var _ = require("lodash");
 
   var fields = {
-    department: ["_id", "id", "agency", "incidentTypes", "rtsEnabled", "pushEnabled", "heartbeatEnabled", "cadBidirectionalEnabled", "cadMonitorMinutes", "cadMonitorEnabled", "cadEmailUsername", "apikey", "active", "department"]
+    department: ["_id", "id", "agency", "incidentTypes", "rtsChannelPrefix", "rtsEnabled", "pushEnabled", "heartbeatEnabled", "cadBidirectionalEnabled", "cadMonitorMinutes", "cadMonitorEnabled", "cadEmailUsername", "apikey", "active", "department"]
   };
 
   var findDepartmentByApiKey = function findDepartmentByApiKey(apiKey, callback) {
