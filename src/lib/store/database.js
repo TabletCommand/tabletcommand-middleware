@@ -11,6 +11,7 @@ module.exports = function(Department, Session, User) {
       "id",
       "agency",
       "incidentTypes",
+      "rtsChannelPrefix",
       "rtsEnabled",
       "pushEnabled",
       "heartbeatEnabled",
