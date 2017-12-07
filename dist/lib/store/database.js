@@ -1,9 +1,11 @@
 "use strict";
 
-// cSpell:words apikey
-
 module.exports = function (Department, Session, User) {
+  "use strict";
+  // cSpell:words apikey tabletcommand
+
   var _ = require("lodash");
+  var debug = require("debug")("tabletcommand-middleware:store:database");
 
   var fields = {
     department: ["_id", "id", "agency", "incidentTypes", "rtsChannelPrefix", "rtsEnabled", "pushEnabled", "heartbeatEnabled", "cadBidirectionalEnabled", "cadMonitorMinutes", "cadMonitorEnabled", "cadEmailUsername", "apikey", "active", "department"]
@@ -14,6 +16,7 @@ module.exports = function (Department, Session, User) {
       apikey: apiKey
     };
 
+    debug("Department.findOne: " + JSON.stringify(query) + ".");
     Department.findOne(query, fields.department, function findOneCallback(err, dbItem) {
       var item = null;
       if (_.isObject(dbItem)) {
@@ -27,6 +30,7 @@ module.exports = function (Department, Session, User) {
     var query = {
       token: token
     };
+    debug("Session.findOne: " + JSON.stringify(query) + ".");
     Session.findOne(query, function findSessionByTokenCallback(err, dbItem) {
       var item = null;
       if (_.isObject(dbItem)) {
@@ -40,6 +44,7 @@ module.exports = function (Department, Session, User) {
     var query = {
       _id: userId
     };
+    debug("User.findOne: " + JSON.stringify(query) + ".");
     User.findOne(query, function findUserByUserIdCallback(err, dbItem) {
       var item = null;
       if (_.isObject(dbItem)) {
@@ -58,6 +63,7 @@ module.exports = function (Department, Session, User) {
     var query = {
       _id: departmentId
     };
+    debug("Department.findOne: " + JSON.stringify(query) + ".");
     Department.findOne(query, fields.department, function findDepartmentByIdCallback(err, dbItem) {
       var item = null;
       if (_.isObject(dbItem)) {

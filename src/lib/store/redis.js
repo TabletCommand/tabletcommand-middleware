@@ -1,10 +1,13 @@
-"use strict";
-
 module.exports = function(client) {
+  "use strict";
+  // cSpell:words tabletcommand
+
   const _ = require("lodash");
+  const debug = require("debug")("tabletcommand-middleware:store:redis");
 
   const findDepartmentByApiKey = function findDepartmentByApiKey(apiKey, callback) {
     const key = `api:${apiKey}`;
+    debug(`GET ${key}`);
     return client.get(key, function(err, item) {
       if (err) {
         return callback(err, null);
@@ -23,7 +26,7 @@ module.exports = function(client) {
     const key = `api:${apiKey}`;
     const val = JSON.stringify(item);
     const ttl = 60 * 60 * 24; // 24h
-
+    debug(`SET ${key} ${val} "EX" ${ttl}`);
     return client.set(key, val, "EX", ttl, function(err, result) {
       return callback(err, result);
     });
@@ -36,6 +39,7 @@ module.exports = function(client) {
 
   const expireItemByKey = function expireItemByKey(key, callback) {
     const ttl = 0;
+    debug(`EXPIRE ${key} ${ttl}`);
     return client.expire(key, ttl, function(err, result) {
       return callback(err, result);
     });
@@ -44,6 +48,7 @@ module.exports = function(client) {
   const findSessionByToken = function findSessionByToken(token, callback) {
     const key = `s:${token}`;
 
+    debug(`GET ${key}`);
     return client.get(key, function(err, item) {
       if (err) {
         return callback(err, null, null, null);
@@ -78,6 +83,7 @@ module.exports = function(client) {
     };
     const val = JSON.stringify(item);
     const ttl = 60 * 60 * 12; // 12h
+    debug(`SET ${key} ${val} "EX" ${ttl}`);
     return client.set(key, val, "EX", ttl, function(err, result) {
       return callback(err, result);
     });
