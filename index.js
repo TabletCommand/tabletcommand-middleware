@@ -14,6 +14,7 @@ var redis = require("./dist/lib/redis");
 var helpers = require("./dist/lib/helpers");
 var routesCommon = require("./dist/routes/common");
 var start = require("./dist/lib/start");
+var logger = require("./dist/lib/bunyan-logger");
 
 module.exports = {
   session: {
@@ -27,5 +28,6 @@ module.exports = {
   redis: redis,
   helpers: helpers,
   routesCommon: routesCommon,
-  start: start
+  start: start,
+  logger: logger
 };

@@ -21,7 +21,7 @@ gulp.task("lint", function() {
     .pipe(eslint.failAfterError());
 });
 
-gulp.task("test", function() {
+gulp.task("test", ["lint"], function() {
   const tests = [
     "test/*.js"
   ];
@@ -34,7 +34,7 @@ gulp.task("test", function() {
     }));
 });
 
-gulp.task("transpile", function() {
+gulp.task("transpile", ["test"], function() {
   const sources = [
     "src/middleware/*.js",
     "src/lib/**",
