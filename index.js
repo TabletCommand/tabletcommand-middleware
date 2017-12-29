@@ -15,6 +15,7 @@ var helpers = require("./dist/lib/helpers");
 var routesCommon = require("./dist/routes/common");
 var start = require("./dist/lib/start");
 var logger = require("./dist/lib/bunyan-logger");
+var configResolver = require("./dist/lib/config-resolver");
 
 module.exports = {
   session: {
@@ -29,5 +30,6 @@ module.exports = {
   helpers: helpers,
   routesCommon: routesCommon,
   start: start,
-  logger: logger
+  logger: logger,
+  configResolver: configResolver
 };
