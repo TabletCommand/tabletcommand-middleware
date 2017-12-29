@@ -39,7 +39,8 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
     "user": userId,
     "when": "2017-11-03T04:57:06.596Z",
     "active": true,
-    "token": token
+    "token": token,
+    "departmentId": departmentId
   };
 
   const u = {

@@ -34,7 +34,7 @@ gulp.task("test", ["lint"], function() {
     }));
 });
 
-gulp.task("transpile", ["test"], function() {
+gulp.task("transpile", function() {
   const sources = [
     "src/middleware/*.js",
     "src/lib/**",
