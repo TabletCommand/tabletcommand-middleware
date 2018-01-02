@@ -84,12 +84,12 @@ module.exports = function(store) {
           req.login = session;
           req.session = session;
           req.user = user;
-        }
 
-        const hasDepartment = _.isObject(department) && helpers.isActive(department);
-        if (hasDepartment) {
-          req.department = department;
-          req.departmentLog = departmentForLogging(department);
+          const hasDepartment = _.isObject(department) && helpers.isActive(department);
+          if (hasDepartment) {
+            req.department = department;
+            req.departmentLog = departmentForLogging(department);
+          }
         }
 
         return callback(err, session, user, department);
