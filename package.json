@@ -1,6 +1,6 @@
 {
   "name": "tabletcommand-middleware",
-  "version": "4.4.0",
+  "version": "4.4.1",
   "description": "Tablet Command Middleware and utils",
   "scripts": {
     "test": "./node_modules/gulp/bin/gulp.js",
@@ -22,7 +22,7 @@
     "mongodb-uri": "^0.9.7",
     "mongoose": "^4.1.10",
     "redis": "^2.4.2",
-    "request": "^2.79.0"
+    "request": "~2.79.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
