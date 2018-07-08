@@ -1,6 +1,6 @@
 {
   "name": "tabletcommand-middleware",
-  "version": "4.4.1",
+  "version": "4.5.0",
   "description": "Tablet Command Middleware and utils",
   "scripts": {
     "test": "./node_modules/gulp/bin/gulp.js",

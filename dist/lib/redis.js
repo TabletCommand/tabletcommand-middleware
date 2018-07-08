@@ -6,78 +6,11 @@ var moment = require("moment-timezone");
 var helpers = require("./helpers");
 var redis = require("redis");
 
-var maxListSize = 30;
-
 var client = function client(config) {
   return redis.createClient(config.redis);
 };
 
-var logHeartbeat = function logHeartbeat(client, department, message, isStatus, callback) {
-  if (!_.isObject(department)) {
-    console.log("Undefined department", department);
-    return callback(null);
-  }
-
-  if (!helpers.itemIsTrue(department, "heartbeatEnabled")) {
-    return callback(null);
-  }
-
-  var keyPrefix = "hb:i";
-  if (isStatus) {
-    keyPrefix = "hb:s";
-  }
-
-  // Log Heartbeat cannot expire keys, because we'd lose the last message
-  // we're limiting the list to maxListSize items instead
-  return keyForDepartment(department, keyPrefix, function (err, key) {
-    if (err) {
-      return callback(err);
-    }
-    return cleanupMessage(message, function (err, msg) {
-      if (err) {
-        return callback(err);
-      }
-      return client.lpush(key, JSON.stringify(msg), function (err, result) {
-        if (err) {
-          return callback(err);
-        }
-        return client.ltrim(key, 0, maxListSize - 1, function (err, result) {
-          return callback(err);
-        });
-      });
-    });
-  });
-};
-
-var cleanupMessage = function cleanupMessage(message, callback) {
-  if (!_.isString(message.Time)) {
-    // If no .Time provided, peek into .Unit
-    if (_.isArray(message.Unit)) {
-      var unitTime = null;
-      _.each(message.Unit, function (unit) {
-        if (_.isString(unit.TimeArrived)) {
-          unitTime = unit.TimeArrived;
-        } else if (_.isString(unit.TimeEnroute)) {
-          unitTime = unit.TimeEnroute;
-        } else if (_.isString(unit.TimeDispatched)) {
-          unitTime = unit.TimeDispatched;
-        }
-      });
-
-      if (!_.isNull(unitTime) && !_.isUndefined(unitTime)) {
-        message.Time = unitTime;
-      }
-    } else if (_.isString(message.EntryDateTime)) {
-      message.Time = message.EntryDateTime;
-    }
-  }
-
-  var msg = _.pick(message, ["Time", "Status", "Message"]);
-  msg.RcvTime = new Date().getTime() / 1000.0;
-  return callback(null, msg);
-};
-
-var keyForDepartment = function keyForDepartment(department, prefix, callback) {
+function keyForDepartment(department, prefix, callback) {
   var key = prefix + ":";
 
   if (_.isString(department.id)) {
@@ -89,57 +22,9 @@ var keyForDepartment = function keyForDepartment(department, prefix, callback) {
   }
 
   return callback(null, key);
-};
+}
 
-var checkHeartbeat = function checkHeartbeat(client, department, callback) {
-  if (!_.isObject(department.heartbeat)) {
-    department.heartbeat = {
-      incident: [],
-      status: []
-    };
-  }
-
-  var isStatus = false;
-  return heartbeatItems(client, department, isStatus, function (err, items) {
-    if (err) {
-      return callback(err, department);
-    }
-
-    department.heartbeat.incident = items;
-    isStatus = true;
-    return heartbeatItems(client, department, isStatus, function (err, items) {
-      department.heartbeat.status = items;
-      return callback(err, department);
-    });
-  });
-};
-
-var heartbeatItems = function heartbeatItems(client, department, isStatus, callback) {
-  var keyPrefix = "hb:i";
-  if (isStatus) {
-    keyPrefix = "hb:s";
-  }
-
-  return keyForDepartment(department, keyPrefix, function (err, key) {
-    if (err) {
-      return callback(err, []);
-    }
-
-    helpers.configureMomentOpts();
-    return client.lrange(key, 0, maxListSize, function (err, result) {
-      var enhancedResults = _.map(result, function (i) {
-        var item = JSON.parse(i);
-        item.RcvTimeSFO = moment.unix(item.RcvTime).tz("America/Los_Angeles").toString();
-        item.RcvTimeMEL = moment.unix(item.RcvTime).tz("Australia/Melbourne").toString();
-        item.timeAgo = moment(item.RcvTime * 1000).fromNow();
-        return item;
-      });
-      return callback(err, enhancedResults);
-    });
-  });
-};
-
-var retrieveItems = function retrieveItems(client, keys, callback) {
+function retrieveItems(client, keys, callback) {
   if (!_.isArray(keys) || _.size(keys) === 0) {
     return callback(null, []);
   }
@@ -167,9 +52,9 @@ var retrieveItems = function retrieveItems(client, keys, callback) {
   };
 
   return processKeysList(client, validKeys, 0, [], callback);
-};
+}
 
-var prepareLocationItem = function prepareLocationItem(item, callback) {
+function prepareLocationItem(item, callback) {
   if (!_.isString(item.departmentId) || item.departmentId.length === 0) {
     return callback(new Error("Invalid departmentId", item));
   }
@@ -197,9 +82,9 @@ var prepareLocationItem = function prepareLocationItem(item, callback) {
   var val = JSON.stringify(object);
 
   return callback(null, key, val, ttl);
-};
+}
 
-var expandLocation = function expandLocation(item) {
+function expandLocation(item) {
   return {
     location: {
       latitude: item.lat,
@@ -212,9 +97,9 @@ var expandLocation = function expandLocation(item) {
     userId: item.userId,
     modified_unix_date: item.t
   };
-};
+}
 
-var listLocation = function listLocation(client, department, callback) {
+function listLocation(client, department, callback) {
   var departmentId = "";
   if (_.isString(department._id)) {
     departmentId = department._id;
@@ -253,9 +138,9 @@ var listLocation = function listLocation(client, department, callback) {
       return callback(err, validResults);
     });
   });
-};
+}
 
-var storeLocation = function storeLocation(client, item, callback) {
+function storeLocation(client, item, callback) {
   return prepareLocationItem(item, function (err, key, val, ttl) {
     if (err) {
       return callback(err);
@@ -269,9 +154,9 @@ var storeLocation = function storeLocation(client, item, callback) {
       return callback(err, result);
     });
   });
-};
+}
 
-var prepareDebugInfoItem = function prepareDebugInfoItem(item, callback) {
+function prepareDebugInfoItem(item, callback) {
   if (!_.isString(item.departmentId) || item.departmentId.length === 0) {
     return callback(new Error("Invalid departmentId", item));
   }
@@ -296,9 +181,9 @@ var prepareDebugInfoItem = function prepareDebugInfoItem(item, callback) {
   var val = JSON.stringify(object);
 
   return callback(null, key, val, ttl);
-};
+}
 
-var storeDebugInfo = function storeDebugInfo(client, item, callback) {
+function storeDebugInfo(client, item, callback) {
   return prepareDebugInfoItem(item, function (err, key, val, ttl) {
     if (err) {
       return callback(err);
@@ -311,9 +196,9 @@ var storeDebugInfo = function storeDebugInfo(client, item, callback) {
       return callback(err, result);
     });
   });
-};
+}
 
-var checkOnline = function checkOnline(client, department, callback) {
+function checkOnline(client, department, callback) {
   return keyForDepartment(department, "info", function (err, key) {
     if (err) {
       return callback(err);
@@ -340,9 +225,9 @@ var checkOnline = function checkOnline(client, department, callback) {
       });
     });
   });
-};
+}
 
-var expireItemsMatchingKey = function expireItemsMatchingKey(client, keyPattern, seconds, callback) {
+function expireItemsMatchingKey(client, keyPattern, seconds, callback) {
   return client.keys(keyPattern, function (err, keys) {
     if (_.size(keys) === 0) {
       return callback(err, []);
@@ -364,9 +249,9 @@ var expireItemsMatchingKey = function expireItemsMatchingKey(client, keyPattern,
 
     return processExpire(keys, 0, callback);
   });
-};
+}
 
-var storeAPNInfo = function storeAPNInfo(client, item, callback) {
+function storeAPNInfo(client, item, callback) {
   return prepareStoreAPNInfoItem(item, function (err, key, val, ttl) {
     if (err) {
       return callback(err, null);
@@ -380,9 +265,9 @@ var storeAPNInfo = function storeAPNInfo(client, item, callback) {
       });
     });
   });
-};
+}
 
-var prepareStoreAPNInfoItem = function prepareStoreAPNInfoItem(item, callback) {
+function prepareStoreAPNInfoItem(item, callback) {
   // INCR apn:deptId:unixTime
 
   if (!_.isFinite(item.time)) {
@@ -399,9 +284,9 @@ var prepareStoreAPNInfoItem = function prepareStoreAPNInfoItem(item, callback) {
   var key = "apn:" + departmentId + ":" + unixTime;
   var value = 1;
   return callback(null, key, value, ttl);
-};
+}
 
-var apnInfoMixin = function apnInfoMixin(keys, values, callback) {
+function apnInfoMixin(keys, values, callback) {
   var grouped = {};
   _.each(_.zipObject(keys, values), function (value, key) {
     var v = parseInt(value);
@@ -435,9 +320,9 @@ var apnInfoMixin = function apnInfoMixin(keys, values, callback) {
 
   var sorted = _.sortBy(simplified, "time");
   return callback(null, sorted);
-};
+}
 
-var getAPNInfo = function getAPNInfo(client, department, callback) {
+function getAPNInfo(client, department, callback) {
   return client.keys("apn:*", function (err, keys) {
     var validKeys = _.filter(keys, function (key) {
       if (department) {
@@ -471,13 +356,10 @@ var getAPNInfo = function getAPNInfo(client, department, callback) {
       });
     });
   });
-};
+}
 
 module.exports = {
   client: client,
-  logHeartbeat: logHeartbeat,
-  checkHeartbeat: checkHeartbeat,
-  heartbeatItems: heartbeatItems,
   storeLocation: storeLocation,
   listLocation: listLocation,
   storeDebugInfo: storeDebugInfo,
