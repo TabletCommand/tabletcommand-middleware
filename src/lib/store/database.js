@@ -21,7 +21,8 @@ module.exports = function(Department, Session, User) {
       "cadEmailUsername",
       "apikey",
       "active",
-      "department"
+      "department",
+      "userContributionEnabled"
     ]
   };
 
