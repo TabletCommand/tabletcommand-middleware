@@ -1,8 +1,8 @@
-module.exports = function(dependencies) {
-  const mongodbUri = require("mongodb-uri");
-  const _ = require("lodash");
+import mongodbUri from "mongodb-uri";
+import _ from "lodash";
 
-  function redisURL(str) {
+function config() {
+  function redisURL(str: string) {
     // URI format: redis://x:942t4dff@192.168.0.17:6379,192.168.0.18:1234
     let urlParts = null;
     try {
@@ -28,3 +28,4 @@ module.exports = function(dependencies) {
     redisURL
   };
 };
+export default config;

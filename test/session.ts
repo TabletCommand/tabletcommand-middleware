@@ -1,4 +1,5 @@
 import { assert } from "chai";
+import express = require("express");
 
 const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
@@ -140,7 +141,7 @@ describe("Session", function() {
 
   context("authBySenecaCookie", function() {
     it("not resolved if no session token is present", function(done) {
-      let fakeReq = {} as unknown as Express.Request;;
+      let fakeReq = {} as unknown as express.Request;;
       let fakeRes = {};
       session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
         assert.isNull(err);

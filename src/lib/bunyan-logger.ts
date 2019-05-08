@@ -1,11 +1,12 @@
 import bunyan from "bunyan";
+import * as express from 'express'
 
-export function logger(name, filePath, logToConsole) {
+export function logger(name: string, filePath: string, logToConsole: boolean) {
   let streams = [];
 
   if (logToConsole) {
     streams.push({
-      level: "info",
+      level: "info" as const,
       stream: process.stdout
     });
   }
@@ -30,8 +31,8 @@ export function logger(name, filePath, logToConsole) {
   return logger;
 };
 
-export function middleware (loggerInstance) {
-  return function accessLogMiddleware(req, res, next) {
+export function middleware (loggerInstance: InstanceType<typeof bunyan>) {
+  return function accessLogMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
     // This doesn't fire the log immediately, but waits until the response is finished
     // This means we have a chance of logging the response code
     res.on("finish", () => {

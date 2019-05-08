@@ -1,9 +1,12 @@
-"use strict";
+import _ from "lodash";
+import { DepartmentModel, SessionModel, UserModel, Department, Session, User } from "tabletcommand-backend-models";
+import express = require("express");
+import { SimpleCallback } from "../types";
+import { isSuper } from "../lib/helpers";
+export function customSession(Department: DepartmentModel, Session: SessionModel, User: UserModel) {
+  
 
-export function customSession(Department, Session, User) {
-  var _ = require("lodash");
-
-  var departmentForLogging = function departmentForLogging(department) {
+  var departmentForLogging = function departmentForLogging(department: Department) {
     if (!_.isObject(department)) {
       return {};
     }
@@ -14,13 +17,17 @@ export function customSession(Department, Session, User) {
     return JSON.parse(JSON.stringify(item)); // Force convert the item to JSON
   };
 
-  var getSession = function getSession(req, res, callback) {
-    if (!_.isObject(req.cookies) || !_.isString(req.cookies["seneca-login"])) {
+  var getSession = function getSession(req: express.Request, res: express.Response, callback: SimpleCallback<Session>) {
+    const cookies: unknown = req.cookies;
+    function hasLogin(c: unknown) : c is { "seneca-login": string } {
+      return _.isObject(c) && _.isString((c as { "seneca-login": string })["seneca-login"]);
+    }
+    if (!hasLogin(cookies)) {
       return callback(null, null);
     }
 
     var query = {
-      token: req.cookies["seneca-login"],
+      token: cookies["seneca-login"],
       active: true
     };
 
@@ -34,7 +41,7 @@ export function customSession(Department, Session, User) {
     });
   };
 
-  var getUser = function getUser(req, res, callback) {
+  var getUser = function getUser(req: express.Request, res: express.Response, callback: SimpleCallback<User>) {
     if (!_.isObject(req.login)) {
       return callback(null, null);
     }
@@ -58,7 +65,7 @@ export function customSession(Department, Session, User) {
     });
   };
 
-  var getDepartmentByUser = function getDepartmentByUser(req, res, callback) {
+  var getDepartmentByUser = function getDepartmentByUser(req: express.Request, res: express.Response, callback: SimpleCallback<Department>) {
     if (!_.isObject(req.user)) {
       return callback(null, null);
     }
@@ -66,11 +73,7 @@ export function customSession(Department, Session, User) {
     var user = req.user;
     var departmentId = user.departmentId;
     var noUserDepartmentId = (!_.isString(departmentId) || departmentId === "");
-    var isSuperUser = (user.superuser === true ||
-      user.superuser === "true" ||
-      user.superuser === 1 ||
-      user.superuser === "1"
-    );
+    var isSuperUser = isSuper(user);
 
     var noQueryDepartmentId = true;
     if (noUserDepartmentId && _.isString(req.query.departmentId)) {
@@ -92,12 +95,12 @@ export function customSession(Department, Session, User) {
     });
   };
 
-  var getDepartmentByApiKey = function getDepartmentByApiKey(req, res, callback) {
+  var getDepartmentByApiKey = function getDepartmentByApiKey(req: express.Request, res: express.Response, callback: SimpleCallback<Department>) {
     var apiKey = "";
     if (_.isObject(req.headers) && _.has(req.headers, "apikey")) {
-      apiKey = req.headers.apiKey;
+      apiKey = req.headers.apiKey as string;
     } else if (_.isObject(req.headers) && _.has(req.headers, "apikey")) {
-      apiKey = req.headers.apikey;
+      apiKey = req.headers.apikey as string;
     } else if (_.isObject(req.query) && _.has(req.query, "apikey")) {
       apiKey = req.query.apiKey;
     } else if (_.isObject(req.query) && _.has(req.query, "apikey")) {
@@ -123,7 +126,7 @@ export function customSession(Department, Session, User) {
     });
   };
 
-  return function(req, res, next) {
+  return function(req: express.Request, res: express.Response, next: express.NextFunction) {
     return getDepartmentByApiKey(req, res, function getDepartmentByApiKeyCallback(err, department) {
       if (!_.isNull(department) && _.size(department) > 0) {
         return next(err);

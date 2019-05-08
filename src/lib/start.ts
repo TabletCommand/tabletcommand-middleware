@@ -1,20 +1,22 @@
 "use strict";
 
+import express = require("express");
+
 // cSpell:words nmea
 
 const debug = require("debug")("server-nmea:storage");
 
-const mongooseOnError = function mongooseOnError(err) {
+export function mongooseOnError(err: Error) {
   console.log(`Mongoose default connection error: ${err}`);
   process.exit();
 };
 
-const mongooseOnDisconnected = function mongooseOnDisconnected() {
+export function mongooseOnDisconnected() {
   debug("Mongoose default connection disconnected");
   process.exit();
 };
 
-const serverOnError = function serverOnError(error) {
+export function serverOnError(error: { syscall: string; code: string; }) {
   if (error.syscall !== "listen") {
     throw error;
   }
@@ -33,19 +35,19 @@ const serverOnError = function serverOnError(error) {
   process.exit(1);
 };
 
-const serverOnListening = function serverOnListening(startTime, server) {
+export function serverOnListening(startTime: number, server) {
   return function onListeningFunc() {
     const address = server.address();
     console.log(`Server listening on ${address.address}:${address.port}. Start time: ${(new Date().valueOf() - startTime)} ms.`);
   };
 };
 
-const redisOnError = function redisOnError(err) {
+export function redisOnError(err: Error) {
   console.log(`Redis connection error: ${err}.`);
   process.exit(1);
 };
 
-const redisOnConnect = function redisOnConnect(config, startTime, mongoose, mongooseOnOpen) {
+export function redisOnConnect<T extends { mongoUrl: string }>(config:T, startTime: number, mongoose, mongooseOnOpen: (cfg: T, startTime: number) => void) {
   return function redisOnConnectFunc() {
     console.log(`Redis connected after ${(new Date().valueOf() - startTime)}ms.`);
 
@@ -56,11 +58,4 @@ const redisOnConnect = function redisOnConnect(config, startTime, mongoose, mong
     mongoose.connection.on("disconnected", mongooseOnDisconnected);
     mongoose.connection.on("open", mongooseOnOpen(config, startTime));
   };
-};
-
-module.exports = {
-  redisOnConnect: redisOnConnect,
-  redisOnError: redisOnError,
-  serverOnError: serverOnError,
-  serverOnListening: serverOnListening
 };

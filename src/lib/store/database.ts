@@ -1,9 +1,10 @@
-module.exports = function(Department, Session, User) {
-  "use strict";
-  // cSpell:words apikey tabletcommand
+import { Department, DepartmentModel, SessionModel, Session, UserModel, User } from "tabletcommand-backend-models";
+import { SimpleCallback } from "../../types";
+import _ from 'lodash'
+import debugModule from 'debug'
 
-  const _ = require("lodash");
-  const debug = require("debug")("tabletcommand-middleware:store:database");
+export function database (Department: DepartmentModel, Session: SessionModel, User: UserModel) {
+  const debug = debugModule("tabletcommand-middleware:store:database");
 
   const fields = {
     department: [
@@ -24,9 +25,9 @@ module.exports = function(Department, Session, User) {
       "department",
       "userContributionEnabled"
     ]
-  };
+  } as const;
 
-  const findDepartmentByApiKey = function findDepartmentByApiKey(apiKey, callback) {
+  const findDepartmentByApiKey = function findDepartmentByApiKey(apiKey: string, callback: SimpleCallback<Department>) {
     const query = {
       apikey: apiKey
     };
@@ -41,7 +42,7 @@ module.exports = function(Department, Session, User) {
     });
   };
 
-  const findSessionByToken = function findSessionByToken(token, callback) {
+  const findSessionByToken = function findSessionByToken(token: string, callback: SimpleCallback<Session>) {
     const query = {
       token: token
     };
@@ -55,7 +56,7 @@ module.exports = function(Department, Session, User) {
     });
   };
 
-  const findUserByUserId = function findUserByUserId(userId, callback) {
+  const findUserByUserId = function findUserByUserId(userId: string, callback: SimpleCallback<User>) {
     const query = {
       _id: userId
     };
@@ -69,7 +70,7 @@ module.exports = function(Department, Session, User) {
     });
   };
 
-  const findDepartmentById = function findDepartmentById(departmentId, callback) {
+  const findDepartmentById = function findDepartmentById(departmentId: string, callback: SimpleCallback<Department>) {
     // super admins do not have a departmentId
     if (!_.isString(departmentId) || departmentId === "") {
       return callback(null, null);
@@ -96,3 +97,4 @@ module.exports = function(Department, Session, User) {
     findDepartmentById: findDepartmentById
   };
 };
+export default database;

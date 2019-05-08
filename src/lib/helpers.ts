@@ -1,9 +1,12 @@
-var _ = require("lodash");
-var moment = require("moment-timezone");
+import _ from "lodash";
+import moment from "moment-timezone"
 var debug = require("debug")("massive-tyrion:helpers");
-var request = require("request");
+import request from "request";
+import { Response, Request } from 'express'
+import { User, Session, Department } from "tabletcommand-backend-models";
+import express = require("express");
 
-export function calculateOffsetFromTime(time) {
+export function calculateOffsetFromTime(time: number) {
   var serverUnix = new Date().valueOf() / 1000;
   var offset = serverUnix - time;
   return {
@@ -13,13 +16,13 @@ export function calculateOffsetFromTime(time) {
   };
 };
 
-export function fixObjectBooleanKey(obj, key, defaultValue) {
+export function fixObjectBooleanKey<K extends PropertyKey>(obj: Partial<Record<K, boolean>>, key: K, defaultValue: boolean) {
   if (!_.has(obj, key)) {
     obj[key] = defaultValue;
   }
-
-  var trueIsh = (obj[key] === "true" || obj[key] === "1" || obj[key] === 1);
-  var falseIsh = (obj[key] === "false" || obj[key] === "0" || obj[key] === 0);
+  const value = obj[key] as unknown;
+  var trueIsh = (value === "true" || value === "1" || value === 1);
+  var falseIsh = (value === "false" || value === "0" || value === 0);
 
   if (trueIsh) {
     obj[key] = true;
@@ -28,24 +31,30 @@ export function fixObjectBooleanKey(obj, key, defaultValue) {
   }
 };
 
-function fixObjectNumberKey(obj, key, defaultValue) {
+function fixObjectNumberKey<K extends PropertyKey>(obj: Partial<Record<K, number>>, key: K, defaultValue: number) {
   if (!_.has(obj, key)) {
     obj[key] = defaultValue;
     return;
   }
 
-  if (!_.isNumber(obj[key]) && _.isNumber(parseInt(obj[key]))) {
-    obj[key] = parseInt(obj[key]);
+  const value = obj[key] as unknown as string;
+  if (!_.isNumber(value) && _.isNumber(parseInt(value))) {
+    obj[key] = parseInt(value);
   }
 };
 
-var fixObjectStringKey = function fixObjectStringKey(obj, key, defaultValue) {
+function fixObjectStringKey<K extends PropertyKey>(obj: Partial<Record<K, string>>, key: K, defaultValue: string){
   if (!_.has(obj, key)) {
     obj[key] = defaultValue;
   }
 };
 
-export function sortWebListsForCollection(list, collectionName) {
+export function sortWebListsForCollection<T extends { 
+  isMandatory?: boolean, 
+  active?: boolean, 
+  position?: number, 
+  friendly_id? : string
+}>(list: T[], collectionName: string): T[] {
   if (!_.isArray(list)) {
     return list;
   }
@@ -141,8 +150,10 @@ export function joinParentChildCollections(parents, children, parentApiId, paren
 
   return parents;
 };
-
-export function itemIsTrue(item, key) {
+type BooleanLike = boolean | ("true" | "false") | (1 | 0)
+export function itemIsTrue(item: Record<string, string[] | string>, key: string): boolean
+export function itemIsTrue<K extends PropertyKey>(item: Partial<Record<K, BooleanLike>> | null, key: K): boolean
+export function itemIsTrue(item: Record<string, BooleanLike | string | string[]> | null, key: string) {
   if (_.isUndefined(item) || _.isNull(item)) {
     return false;
   }
@@ -157,19 +168,19 @@ export function itemIsTrue(item, key) {
   return itemTrue || itemOne;
 };
 
-export function isAdmin(item) {
+export function isAdmin(item: { admin?: BooleanLike } | null) {
   return itemIsTrue(item, "admin");
 };
 
-export function isSuper(item) {
+export function isSuper(item: { superuser?: BooleanLike } | null) {
   return itemIsTrue(item, "superuser");
 };
 
-export function isActive(item) {
+export function isActive(item: { active?: BooleanLike } | null) {
   return itemIsTrue(item, "active");
 };
 
-export function verifyJson(req, res, buf) {
+export function verifyJson(req: Request , res: Response, buf: string) {
   try {
     JSON.parse(buf);
   } catch (err) {
@@ -178,7 +189,7 @@ export function verifyJson(req, res, buf) {
   }
 };
 
-export function makeId(length) {
+export function makeId(length: number) {
   var text = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -189,7 +200,7 @@ export function makeId(length) {
   return text;
 };
 
-export function hasFeature(dept, feature) {
+export function hasFeature(dept: Department, feature: keyof Department) {
   var value = 0;
 
   var hasKey = !_.isUndefined(dept[feature]) && !_.isNull(dept[feature]);
@@ -202,7 +213,7 @@ export function hasFeature(dept, feature) {
   return value;
 };
 
-export function isItemValidOnMap(item) {
+export function isItemValidOnMap(item: { latitude: string; longitude: string; }) {
   var invalidDegreeLimit = 5.0;
 
   var parsedLat = parseInt(item.latitude);
@@ -219,19 +230,19 @@ export function isItemValidOnMap(item) {
   return true;
 };
 
-function stripSessionFields(value, key) {
+function stripSessionFields(value: any, key: string) {
   var fields = ["pass", "salt", "when"];
   var skipFields = _.isString(key) && _.includes(fields, key.toLowerCase());
-  var filterSeneca = _.isString(key) && _.trimRight(key, "$") !== key;
+  var filterSeneca = _.isString(key) && _.trimEnd(key, "$") !== key;
 
   return filterSeneca || skipFields;
 };
 
-export function cleanupUser(user) {
+export function cleanupUser(user: User) {
   return _.omit(user, stripSessionFields);
 };
 
-export function resolveUser(args, callback) {
+export function resolveUser(args: { req$: express.Request, user: User }, callback: (err: Error, user?: User, session?: Session) => void): void {
   var hasSeneca = _.isObject(args) &&
     _.isObject(args.req$) &&
     _.isObject(args.req$.seneca);
@@ -257,7 +268,7 @@ export function resolveUser(args, callback) {
     resolvedUser = args.req$.user;
   }
 
-  var session: { id?: string } = {};
+  var session: Session;
   if (hasSeneca && _.isObject(args.req$.seneca.login)) {
     session = args.req$.seneca.login;
   } else if (_.isObject(args.req$.session)) {
@@ -277,18 +288,19 @@ export function resolveUser(args, callback) {
   return callback(null, user, session);
 };
 
-export function resolveLogin(args, callback) {
+type ResolveLoginArg = { req$: { seneca: { login: User; }; }; }
+export function resolveLogin(args: ResolveLoginArg): User {
   if (!_.isObject(args) ||
     !_.isObject(args.req$) ||
     !_.isObject(args.req$.seneca) ||
     !_.isObject(args.req$.seneca.login) ||
     !itemIsTrue(args.req$.seneca.login, "active")
   ) {
-    return callback(null, null);
+    return null;
   }
 
   var login = cleanupUser(args.req$.seneca.login);
-  return callback(null, login);
+  return login;
 };
 
 var getClosedOrDate = function getClosedOrDate() {
@@ -304,7 +316,7 @@ var getClosedOrDate = function getClosedOrDate() {
   return closedOr;
 };
 
-export function extractInfoFromDevice(device) {
+export function extractInfoFromDevice(device: { token?: string; env: any; ver: any; ua: any; time: any; bundleIdentifier?: string; silentEnabled?: boolean; richEnabled?: boolean; }) {
   var maxDaysSinceEvent = 120;
   var info = {
     appVer: "Unknown",
@@ -364,7 +376,7 @@ export function extractInfoFromDevice(device) {
   return info;
 };
 
-export function headersToDevice(token, headers) {
+export function headersToDevice(token: string, headers: express.Request['headers']) {
   var env = "production";
   if (_.has(headers, "x-tc-apn-environment") &&
     headers["x-tc-apn-environment"] === "beta") {
@@ -373,7 +385,7 @@ export function headersToDevice(token, headers) {
 
   var appVersion = "";
   if (_.has(headers, "x-tc-app-version")) {
-    appVersion = headers["x-tc-app-version"];
+    appVersion = headers["x-tc-app-version"] as string;
   }
 
   var userAgent = "";
@@ -385,7 +397,7 @@ export function headersToDevice(token, headers) {
   if (_.has(headers, "x-tc-bundle-identifier") &&
     _.isString(headers["x-tc-bundle-identifier"]) &&
     _.size(headers["x-tc-bundle-identifier"]) > 0) {
-    bundleIdentifier = headers["x-tc-bundle-identifier"];
+    bundleIdentifier = headers["x-tc-bundle-identifier"] as string;
   } else if (appVersion.match(/Tablet CMD Beta/i)) {
     bundleIdentifier = "com.simple-track.beta.Tablet-CMD";
   }
@@ -407,7 +419,7 @@ export function headersToDevice(token, headers) {
   return deviceInfo;
 };
 
-export function logUserDevice(postUrl, authToken, user, session, headers) {
+export function logUserDevice(postUrl: string, authToken: string, user: User, session: Session, headers: Request['headers']) {
   var device = headersToDevice("", headers);
   var info = extractInfoFromDevice(device);
 
@@ -422,7 +434,7 @@ export function logUserDevice(postUrl, authToken, user, session, headers) {
     session: session.id
   };
 
-  var filter = [];
+  var filter: string[] = [];
 
   var shouldFilter = false;
   if (shouldFilter && _.contains(filter, item.appVer)) {
@@ -432,7 +444,7 @@ export function logUserDevice(postUrl, authToken, user, session, headers) {
   return requestPost(postUrl, authToken, item);
 };
 
-export function requestPost(postUrl, authToken, item, callback?) {
+export function requestPost(postUrl: string, authToken: string, item, callback?) {
   if (!_.isFunction(callback)) {
     callback = function defaultCallback() {
       // Empty

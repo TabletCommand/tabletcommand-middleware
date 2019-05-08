@@ -1,12 +1,12 @@
 /* jslint node: true */
-"use strict";
+import express from "express";
+import _ from "lodash";
 
-module.exports = function tokenSession(allowedTokens) {
-  var _ = require("lodash");
+export function tokenSession(allowedTokens: Array<{ token: string, username: string }>) {
 
-  var buildAllowedItems = function buildAllowedItems(items, callback) {
+  var buildAllowedItems = function buildAllowedItems(items: Array<{ token: string, username: string }>) {
     if (!_.isArray(items)) {
-      return callback(null, []);
+      return [];
     }
 
     var mapped = _.map(items, function mapCallback(item) {
@@ -37,14 +37,16 @@ module.exports = function tokenSession(allowedTokens) {
       return item.active;
     });
 
-    return callback(null, filtered);
+    return filtered;
   };
 
-  var validateToken = function validateToken(err, tokens, req, res, next) {
+  var validateToken = function validateToken(err:Error, tokens: Array<{ token: string }>, req: express.Request, res: express.Response, next: express.NextFunction) {
     var token = "";
-    if (_.has(req.headers, "x-tc-auth-token") &&
-      _.isString(req.headers["x-tc-auth-token"])) {
-      token = _.trim(req.headers["x-tc-auth-token"]);
+    if (_.has(req.headers, "x-tc-auth-token")) {
+      const headerValue = req.headers["x-tc-auth-token"];
+      if(_.isString(headerValue)) {
+        token = _.trim(headerValue);
+      }
     }
 
     var foundUsers = _.filter(tokens, function filterCallback(item) {
@@ -58,9 +60,8 @@ module.exports = function tokenSession(allowedTokens) {
     return next(err);
   };
 
-  return function tokenSessionCallback(req, res, next) {
-    return buildAllowedItems(allowedTokens, function buildAllowedItemsCallback(err, tokens) {
-      return validateToken(err, tokens, req, res, next);
-    });
+  return function tokenSessionCallback(req: express.Request, res: express.Response, next: express.NextFunction) {
+    const tokens = buildAllowedItems(allowedTokens);
+    return validateToken(null, tokens, req, res, next);
   };
 };

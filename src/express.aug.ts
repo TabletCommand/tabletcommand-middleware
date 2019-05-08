@@ -6,7 +6,16 @@ declare global  {
             statsdKey: string;
             user: User;
             department: Department;
+            departmentLog: unknown;
             session: Session;
+            login: Session;
+            seneca: {
+                login: Session;
+                user: User;
+            }
+        }
+        interface Response {
+            _header: boolean
         }
     }
 }

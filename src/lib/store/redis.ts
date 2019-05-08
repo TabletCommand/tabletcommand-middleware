@@ -1,11 +1,16 @@
-module.exports = function(client) {
+import { RedisClient } from "redis";
+import _ from "lodash";
+import debugModule from "debug"
+import { SimpleCallback } from "../../types";
+import { Session, Department, User } from "tabletcommand-backend-models";
+
+export function redis(client: RedisClient) {
   "use strict";
   // cSpell:words tabletcommand
 
-  const _ = require("lodash");
-  const debug = require("debug")("tabletcommand-middleware:store:redis");
+  const debug = debugModule("tabletcommand-middleware:store:redis");
 
-  const findDepartmentByApiKey = function findDepartmentByApiKey(apiKey, callback) {
+  const findDepartmentByApiKey = function findDepartmentByApiKey(apiKey: string, callback: SimpleCallback<Department>) {
     const key = `api:${apiKey}`;
     debug(`GET ${key}`);
     return client.get(key, function(err, item) {
@@ -22,7 +27,7 @@ module.exports = function(client) {
     });
   };
 
-  const storeDepartmentByApiKey = function storeDepartmentByApiKey(apiKey, item, callback) {
+  const storeDepartmentByApiKey = function storeDepartmentByApiKey(apiKey: string, item: Department, callback: SimpleCallback<"OK">) {
     const key = `api:${apiKey}`;
     const val = JSON.stringify(item);
     const ttl = 60 * 60 * 24; // 24h
@@ -32,12 +37,12 @@ module.exports = function(client) {
     });
   };
 
-  const expireDepartmentByApiKey = function expireDepartmentByApiKey(apiKey, callback) {
+  const expireDepartmentByApiKey = function expireDepartmentByApiKey(apiKey: string, callback: SimpleCallback<number>) {
     const key = `api:${apiKey}`;
     return expireItemByKey(key, callback);
   };
 
-  const expireItemByKey = function expireItemByKey(key, callback) {
+  const expireItemByKey = function expireItemByKey(key: string, callback: SimpleCallback<number>) {
     const ttl = 0;
     debug(`EXPIRE ${key} ${ttl}`);
     return client.expire(key, ttl, function(err, result) {
@@ -45,7 +50,7 @@ module.exports = function(client) {
     });
   };
 
-  const findSessionByToken = function findSessionByToken(token, callback) {
+  const findSessionByToken = function findSessionByToken(token: string, callback: (err: Error, s: Session, user: User, department: Department) => void) {
     const key = `s:${token}`;
 
     debug(`GET ${key}`);
@@ -74,7 +79,7 @@ module.exports = function(client) {
     });
   };
 
-  const storeSessionByToken = function storeSessionByToken(token, session, user, department, callback) {
+  const storeSessionByToken = function storeSessionByToken(token: string, session: Session, user: User, department: Department, callback: SimpleCallback<"OK">) {
     const key = `s:${token}`;
     const item = {
       s: session,
@@ -89,7 +94,7 @@ module.exports = function(client) {
     });
   };
 
-  const expireSessionByToken = function expireSessionByToken(token, callback) {
+  function expireSessionByToken(token: string, callback: SimpleCallback<number>) {
     const key = `s:${token}`;
     return expireItemByKey(key, callback);
   };
@@ -104,3 +109,4 @@ module.exports = function(client) {
     expireSessionByToken: expireSessionByToken
   };
 };
+export default redis;

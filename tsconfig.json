@@ -3,12 +3,17 @@
        "module": "commonjs",
        "resolveJsonModule": true,
        "moduleResolution": "node",
+       "esModuleInterop": true,
+       "allowSyntheticDefaultImports": true,
        "target": "es2017",
        // "declaration": true,
-       // "noImplicitAny": true,
+       "noImplicitAny": true,
        // "strict": true,
        "outDir": "build",
        // "declarationDir": "definitions",
-       "sourceMap": true
-    }
+       "sourceMap": true,
+    },
+    "exclude": [ 
+        "test/**.ts"
+    ]
 }

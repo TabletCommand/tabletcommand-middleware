@@ -1,11 +1,14 @@
-"use strict";
+import { DepartmentModel, SessionModel, UserModel, Department, Session, User } from "tabletcommand-backend-models";
+import { SimpleCallback } from "../../types";
+import { RedisClient } from "redis";
+import _ from "lodash";
+import databaseModule from "./database";
+import redisModule from "./redis";
 
-module.exports = function(Department, Session, User, redisClient) {
-  const _ = require("lodash");
-  const database = require("./database")(Department, Session, User);
-  const redis = require("./redis")(redisClient);
-
-  const findDepartmentByApiKey = function findDepartmentByApiKey(apiKey, callback) {
+export function store(Department: DepartmentModel, Session: SessionModel, User: UserModel, redisClient: RedisClient) {
+  const redis = redisModule(redisClient);
+  const database = databaseModule(Department, Session, User);
+  const findDepartmentByApiKey = function findDepartmentByApiKey(apiKey: string, callback: (err: Error, department?: Department, cached?: boolean) => void) {
     let cached = false;
     return redis.findDepartmentByApiKey(apiKey, function(err, redisDepartment) {
       if (err) {
@@ -29,20 +32,20 @@ module.exports = function(Department, Session, User, redisClient) {
     });
   };
 
-  const expireDepartmentByApiKey = function expireDepartmentByApiKey(apiKey, callback) {
+  function expireDepartmentByApiKey(apiKey: string, callback: SimpleCallback<number>) {
     return redis.expireDepartmentByApiKey(apiKey, callback);
   };
 
-  const findSessionByToken = function findSessionByToken(token, callback) {
+  const findSessionByToken = function findSessionByToken(token: string, callback: (err: Error, session?: Session, user?: User, department?: Department, cached?: boolean) => void) {
     let cached = false;
     return redis.findSessionByToken(token, function(err, rSession, rUser, rDepartment) {
       if (err) {
         return callback(err);
       }
 
-      let session = null;
-      let user = null;
-      let department = null;
+      let session: Session = null;
+      let user: User = null;
+      let department: Department = null;
       if (_.isObject(rSession) && _.isObject(rUser)) {
         session = rSession;
         user = rUser;
@@ -59,7 +62,7 @@ module.exports = function(Department, Session, User, redisClient) {
         return callback(err, session, user, department, cached);
       }
 
-      return database.findSessionByToken(token, function(err, dSession) {
+      return database.findSessionByToken(token, function(err, dSession: Session) {
         if (err) {
           return callback(err);
         }
@@ -86,7 +89,7 @@ module.exports = function(Department, Session, User, redisClient) {
             });
           }
 
-          user = dUser;
+          user = dUser as User;
 
           return database.findDepartmentById(user.departmentId, function(err, dDepartment) {
             if (err) {
@@ -94,7 +97,7 @@ module.exports = function(Department, Session, User, redisClient) {
             }
 
             if (_.isObject(dDepartment)) {
-              department = dDepartment;
+              department = dDepartment as Department;
             }
 
             return redis.storeSessionByToken(token, session, user, department, function(err, result) {
@@ -106,7 +109,7 @@ module.exports = function(Department, Session, User, redisClient) {
     });
   };
 
-  const expireSessionByToken = function expireSessionByToken(token, callback) {
+  const expireSessionByToken = function expireSessionByToken(token: string, callback: SimpleCallback<number>) {
     return redis.expireSessionByToken(token, callback);
   };
 
@@ -118,3 +121,5 @@ module.exports = function(Department, Session, User, redisClient) {
     expireSessionByToken: expireSessionByToken
   };
 };
+export default store;
+export type StoreModule = ReturnType<typeof store>

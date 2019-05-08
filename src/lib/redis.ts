@@ -1,14 +1,16 @@
-var _ = require("lodash");
-var moment = require("moment-timezone");
+import _ from "lodash";
+import moment from "moment-timezone";
 
-var helpers = require("./helpers");
-var redis = require("redis");
+import * as helpers from "./helpers";
+import redis, { RedisClient } from "redis";
+import { Department, Location, FieldsOfDocument } from "tabletcommand-backend-models";
+import { SimpleCallback } from "../types";
 
-export function client(config) {
+export function client(config: { redis: string; }) {
   return redis.createClient(config.redis);
 };
 
-function keyForDepartment(department, prefix, callback) {
+function keyForDepartment(department: Department, prefix: string, callback: SimpleCallback<string>) {
   var key = prefix + ":";
 
   if (_.isString(department.id)) {
@@ -22,7 +24,7 @@ function keyForDepartment(department, prefix, callback) {
   return callback(null, key);
 }
 
-function retrieveItems(client, keys, callback) {
+function retrieveItems(client: RedisClient, keys: string[], callback: SimpleCallback<string[]>) {
   if (!_.isArray(keys) || _.size(keys) === 0) {
     return callback(null, []);
   }
@@ -31,9 +33,9 @@ function retrieveItems(client, keys, callback) {
     return _.isString(k) && k.length > 0;
   });
 
-  var processKeysList = function processKeysList(client, items, index, resolved, callback) {
+  function processKeysList(client: RedisClient, items: string[], index: number, resolved: string[], callback: SimpleCallback<string[]>) : boolean {
     if (index >= _.size(items)) {
-      return callback(null, resolved);
+      callback(null, resolved);
     }
 
     var key = items[index];
@@ -52,7 +54,7 @@ function retrieveItems(client, keys, callback) {
   return processKeysList(client, validKeys, 0, [], callback);
 }
 
-function prepareLocationItem(item, callback) {
+function prepareLocationItem(item: Location, callback: (err: Error, key?: string, val?: string, ttl?: number)=> void) {
   if (!_.isString(item.departmentId) || item.departmentId.length === 0) {
     return callback(new Error(`Invalid departmentId ${item}`));
   }
@@ -82,7 +84,17 @@ function prepareLocationItem(item, callback) {
   return callback(null, key, val, ttl);
 }
 
-function expandLocation(item) {
+interface PackedLocation {
+  lat: number;
+  lon: number;
+  type: string;
+  username: string;
+  active: boolean;
+  uuid: string;
+  userId: string;
+  t: number;
+}
+function expandLocation(item: PackedLocation): Partial<FieldsOfDocument<Location>> {
   return {
     location: {
       latitude: item.lat,
@@ -97,7 +109,7 @@ function expandLocation(item) {
   };
 }
 
-export function listLocation(client, department, callback) {
+export function listLocation(client: RedisClient, department: Department, callback: SimpleCallback<Partial<FieldsOfDocument<Location>>[]>) {
   var departmentId = "";
   if (_.isString(department._id)) {
     departmentId = department._id;
@@ -123,7 +135,7 @@ export function listLocation(client, department, callback) {
     }
     return retrieveItems(client, result[1], function(err, items) {
       var unpackResults = _.map(items, function(i) {
-        var out: string | (ReturnType<typeof expandLocation> & { departmentId?: string }) = "";
+        var out: Partial<FieldsOfDocument<Location>> = null;
         try {
           out = expandLocation(JSON.parse(i));
           out.departmentId = departmentId;
@@ -138,7 +150,7 @@ export function listLocation(client, department, callback) {
   });
 }
 
-export function storeLocation(client, item, callback) {
+export function storeLocation(client: RedisClient, item: Location, callback: SimpleCallback<"OK">) {
   return prepareLocationItem(item, function(err, key, val, ttl) {
     if (err) {
       return callback(err);
@@ -154,7 +166,7 @@ export function storeLocation(client, item, callback) {
   });
 }
 
-function prepareDebugInfoItem(item, callback) {
+function prepareDebugInfoItem(item: Location, callback: (err: Error, key?: string, val?: string, ttl?: number)=> void) {
   if (!_.isString(item.departmentId) || item.departmentId.length === 0) {
     return callback(new Error(`Invalid departmentId: ${item}`));
   }
@@ -181,7 +193,7 @@ function prepareDebugInfoItem(item, callback) {
   return callback(null, key, val, ttl);
 }
 
-export function storeDebugInfo(client, item, callback) {
+export function storeDebugInfo(client: RedisClient, item: Location, callback: SimpleCallback<"OK">) {
   return prepareDebugInfoItem(item, function(err, key, val, ttl) {
     if (err) {
       return callback(err);
@@ -196,7 +208,7 @@ export function storeDebugInfo(client, item, callback) {
   });
 }
 
-export function checkOnline(client, department, callback) {
+export function checkOnline(client: RedisClient, department: Department, callback: SimpleCallback<any[]>) {
   return keyForDepartment(department, "info", function(err, key) {
     if (err) {
       return callback(err);
@@ -225,15 +237,16 @@ export function checkOnline(client, department, callback) {
   });
 }
 
-export function expireItemsMatchingKey(client, keyPattern, seconds, callback) {
+export function expireItemsMatchingKey(client: RedisClient, keyPattern: string, seconds: number, callback: SimpleCallback<string[]>) {
   return client.keys(keyPattern, function(err, keys) {
     if (_.size(keys) === 0) {
       return callback(err, []);
     }
 
-    var processExpire = function processExpire(items, index, callback) {
+    function processExpire(items: string[], index: number, callback: SimpleCallback<string[]>): boolean {
       if (index >= _.size(items)) {
-        return callback();
+        callback(null);
+        return false;
       }
 
       var key = items[index];
@@ -249,7 +262,7 @@ export function expireItemsMatchingKey(client, keyPattern, seconds, callback) {
   });
 }
 
-export function storeAPNInfo(client, item, callback) {
+export function storeAPNInfo(client: RedisClient, item: APNItem, callback: SimpleCallback<number>) {
   return prepareStoreAPNInfoItem(item, function(err, key, val, ttl) {
     if (err) {
       return callback(err, null);
@@ -264,8 +277,8 @@ export function storeAPNInfo(client, item, callback) {
     });
   });
 }
-
-function prepareStoreAPNInfoItem(item, callback) {
+type APNItem = { time: number; departmentId: string; };
+function prepareStoreAPNInfoItem(item: APNItem, callback: (err: Error, key?: string, value?: number, ttl?: number) => void) {
   // INCR apn:deptId:unixTime
 
   if (!_.isFinite(item.time)) {
@@ -284,8 +297,8 @@ function prepareStoreAPNInfoItem(item, callback) {
   return callback(null, key, value, ttl);
 }
 
-function apnInfoMixin(keys, values, callback) {
-  var grouped = {};
+function apnInfoMixin(keys: string[], values: string[], callback: SimpleCallback<Array<{ time: number, value: number }>>) {
+  var grouped: Record<string, number> = {};
   _.each(_.zipObject(keys, values), function(value, key) {
     var v = parseInt(value);
     if (!_.isFinite(v)) {
@@ -320,7 +333,7 @@ function apnInfoMixin(keys, values, callback) {
   return callback(null, sorted);
 }
 
-export function getAPNInfo(client, department, callback) {
+export function getAPNInfo(client: RedisClient, department: Department, callback: SimpleCallback<Array<{ time: number; value: number;}>>) {
   return client.keys("apn:*", function(err, keys) {
     var validKeys = _.filter(keys, function(key) {
       if (department) {
