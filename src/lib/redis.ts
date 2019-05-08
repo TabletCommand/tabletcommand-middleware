@@ -1,12 +1,10 @@
-"use strict";
-
 var _ = require("lodash");
 var moment = require("moment-timezone");
 
 var helpers = require("./helpers");
 var redis = require("redis");
 
-var client = function client(config) {
+export function client(config) {
   return redis.createClient(config.redis);
 };
 
@@ -56,11 +54,11 @@ function retrieveItems(client, keys, callback) {
 
 function prepareLocationItem(item, callback) {
   if (!_.isString(item.departmentId) || item.departmentId.length === 0) {
-    return callback(new Error("Invalid departmentId", item));
+    return callback(new Error(`Invalid departmentId ${item}`));
   }
 
   if (!_.isString(item.userId) || item.userId.length === 0) {
-    return callback(new Error("Invalid userId", item));
+    return callback(new Error(`Invalid userId ${item}`));
   }
 
   var ttl = 60 * 60 * 24; // 24h
@@ -99,7 +97,7 @@ function expandLocation(item) {
   };
 }
 
-function listLocation(client, department, callback) {
+export function listLocation(client, department, callback) {
   var departmentId = "";
   if (_.isString(department._id)) {
     departmentId = department._id;
@@ -112,7 +110,7 @@ function listLocation(client, department, callback) {
   }
 
   if (!_.isString(departmentId) || departmentId.length === 0) {
-    return callback(new Error("Invalid departmentId", department));
+    return callback(new Error(`Invalid departmentId ${departmentId}`));
   }
 
   var cursor = "0";
@@ -125,7 +123,7 @@ function listLocation(client, department, callback) {
     }
     return retrieveItems(client, result[1], function(err, items) {
       var unpackResults = _.map(items, function(i) {
-        var out = "";
+        var out: string | (ReturnType<typeof expandLocation> & { departmentId?: string }) = "";
         try {
           out = expandLocation(JSON.parse(i));
           out.departmentId = departmentId;
@@ -140,7 +138,7 @@ function listLocation(client, department, callback) {
   });
 }
 
-function storeLocation(client, item, callback) {
+export function storeLocation(client, item, callback) {
   return prepareLocationItem(item, function(err, key, val, ttl) {
     if (err) {
       return callback(err);
@@ -158,15 +156,15 @@ function storeLocation(client, item, callback) {
 
 function prepareDebugInfoItem(item, callback) {
   if (!_.isString(item.departmentId) || item.departmentId.length === 0) {
-    return callback(new Error("Invalid departmentId", item));
+    return callback(new Error(`Invalid departmentId: ${item}`));
   }
 
   if (!_.isString(item.userId) || item.userId.length === 0) {
-    return callback(new Error("Invalid userId", item));
+    return callback(new Error(`Invalid userId: ${item}`));
   }
 
   if (!_.isString(item.session) || item.session.length === 0) {
-    return callback(new Error("Invalid session", item));
+    return callback(new Error(`Invalid session ${item}`));
   }
 
   var ttl = 60 * 60 * 24 * 14; // 14d
@@ -183,7 +181,7 @@ function prepareDebugInfoItem(item, callback) {
   return callback(null, key, val, ttl);
 }
 
-function storeDebugInfo(client, item, callback) {
+export function storeDebugInfo(client, item, callback) {
   return prepareDebugInfoItem(item, function(err, key, val, ttl) {
     if (err) {
       return callback(err);
@@ -198,7 +196,7 @@ function storeDebugInfo(client, item, callback) {
   });
 }
 
-function checkOnline(client, department, callback) {
+export function checkOnline(client, department, callback) {
   return keyForDepartment(department, "info", function(err, key) {
     if (err) {
       return callback(err);
@@ -227,7 +225,7 @@ function checkOnline(client, department, callback) {
   });
 }
 
-function expireItemsMatchingKey(client, keyPattern, seconds, callback) {
+export function expireItemsMatchingKey(client, keyPattern, seconds, callback) {
   return client.keys(keyPattern, function(err, keys) {
     if (_.size(keys) === 0) {
       return callback(err, []);
@@ -251,7 +249,7 @@ function expireItemsMatchingKey(client, keyPattern, seconds, callback) {
   });
 }
 
-function storeAPNInfo(client, item, callback) {
+export function storeAPNInfo(client, item, callback) {
   return prepareStoreAPNInfoItem(item, function(err, key, val, ttl) {
     if (err) {
       return callback(err, null);
@@ -271,11 +269,11 @@ function prepareStoreAPNInfoItem(item, callback) {
   // INCR apn:deptId:unixTime
 
   if (!_.isFinite(item.time)) {
-    return callback(new Error("Invalid time", item));
+    return callback(new Error(`Invalid time: ${item}`));
   }
 
   if (!_.isString(item.departmentId)) {
-    return callback(new Error("Invalid departmentId", item));
+    return callback(new Error(`Invalid departmentId: ${item}`));
   }
 
   var ttl = 60 * 61; // 61 minutes
@@ -322,7 +320,7 @@ function apnInfoMixin(keys, values, callback) {
   return callback(null, sorted);
 }
 
-function getAPNInfo(client, department, callback) {
+export function getAPNInfo(client, department, callback) {
   return client.keys("apn:*", function(err, keys) {
     var validKeys = _.filter(keys, function(key) {
       if (department) {
@@ -357,14 +355,3 @@ function getAPNInfo(client, department, callback) {
     });
   });
 }
-
-module.exports = {
-  client: client,
-  storeLocation: storeLocation,
-  listLocation: listLocation,
-  storeDebugInfo: storeDebugInfo,
-  checkOnline: checkOnline,
-  expireItemsMatchingKey: expireItemsMatchingKey,
-  storeAPNInfo: storeAPNInfo,
-  getAPNInfo: getAPNInfo
-};

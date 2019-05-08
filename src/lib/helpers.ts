@@ -1,11 +1,9 @@
-"use strict";
-
 var _ = require("lodash");
 var moment = require("moment-timezone");
 var debug = require("debug")("massive-tyrion:helpers");
 var request = require("request");
 
-var calculateOffsetFromTime = function calculateOffsetFromTime(time) {
+export function calculateOffsetFromTime(time) {
   var serverUnix = new Date().valueOf() / 1000;
   var offset = serverUnix - time;
   return {
@@ -15,7 +13,7 @@ var calculateOffsetFromTime = function calculateOffsetFromTime(time) {
   };
 };
 
-var fixObjectBooleanKey = function fixObjectBooleanKey(obj, key, defaultValue) {
+export function fixObjectBooleanKey(obj, key, defaultValue) {
   if (!_.has(obj, key)) {
     obj[key] = defaultValue;
   }
@@ -30,7 +28,7 @@ var fixObjectBooleanKey = function fixObjectBooleanKey(obj, key, defaultValue) {
   }
 };
 
-var fixObjectNumberKey = function fixObjectNumberKey(obj, key, defaultValue) {
+function fixObjectNumberKey(obj, key, defaultValue) {
   if (!_.has(obj, key)) {
     obj[key] = defaultValue;
     return;
@@ -47,7 +45,7 @@ var fixObjectStringKey = function fixObjectStringKey(obj, key, defaultValue) {
   }
 };
 
-var sortWebListsForCollection = function sortWebListsForCollection(list, collectionName) {
+export function sortWebListsForCollection(list, collectionName) {
   if (!_.isArray(list)) {
     return list;
   }
@@ -83,8 +81,8 @@ var sortWebListsForCollection = function sortWebListsForCollection(list, collect
   return list;
 };
 
-var joinParentChildCollections = function(parents, childs, parentApiId, parentLocalId, parentName, parentUuid, parentDest) {
-  var mapLocalIdItems = _.map(_.filter(childs, function(item) {
+export function joinParentChildCollections(parents, children, parentApiId, parentLocalId, parentName, parentUuid, parentDest) {
+  var mapLocalIdItems = _.map(_.filter(children, function(item) {
     return _.has(item, parentLocalId) && !_.has(item, parentApiId);
   }), function(item) {
     return {
@@ -93,7 +91,7 @@ var joinParentChildCollections = function(parents, childs, parentApiId, parentLo
     };
   });
 
-  var mapApiIdItems = _.map(_.filter(childs, function(item) {
+  var mapApiIdItems = _.map(_.filter(children, function(item) {
     return _.has(item, parentApiId);
   }), function(item) {
     return {
@@ -144,7 +142,7 @@ var joinParentChildCollections = function(parents, childs, parentApiId, parentLo
   return parents;
 };
 
-var itemIsTrue = function itemIsTrue(item, key) {
+export function itemIsTrue(item, key) {
   if (_.isUndefined(item) || _.isNull(item)) {
     return false;
   }
@@ -159,19 +157,19 @@ var itemIsTrue = function itemIsTrue(item, key) {
   return itemTrue || itemOne;
 };
 
-var isAdmin = function isAdmin(item) {
+export function isAdmin(item) {
   return itemIsTrue(item, "admin");
 };
 
-var isSuper = function isSuper(item) {
+export function isSuper(item) {
   return itemIsTrue(item, "superuser");
 };
 
-var isActive = function isActive(item) {
+export function isActive(item) {
   return itemIsTrue(item, "active");
 };
 
-var verifyJson = function(req, res, buf) {
+export function verifyJson(req, res, buf) {
   try {
     JSON.parse(buf);
   } catch (err) {
@@ -180,7 +178,7 @@ var verifyJson = function(req, res, buf) {
   }
 };
 
-var makeId = function makeId(length) {
+export function makeId(length) {
   var text = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -191,7 +189,7 @@ var makeId = function makeId(length) {
   return text;
 };
 
-var hasFeature = function hasFeature(dept, feature) {
+export function hasFeature(dept, feature) {
   var value = 0;
 
   var hasKey = !_.isUndefined(dept[feature]) && !_.isNull(dept[feature]);
@@ -204,7 +202,7 @@ var hasFeature = function hasFeature(dept, feature) {
   return value;
 };
 
-var isItemValidOnMap = function isItemValidOnMap(item) {
+export function isItemValidOnMap(item) {
   var invalidDegreeLimit = 5.0;
 
   var parsedLat = parseInt(item.latitude);
@@ -221,7 +219,7 @@ var isItemValidOnMap = function isItemValidOnMap(item) {
   return true;
 };
 
-var stripSessionFields = function stripSessionFields(value, key) {
+function stripSessionFields(value, key) {
   var fields = ["pass", "salt", "when"];
   var skipFields = _.isString(key) && _.includes(fields, key.toLowerCase());
   var filterSeneca = _.isString(key) && _.trimRight(key, "$") !== key;
@@ -229,11 +227,11 @@ var stripSessionFields = function stripSessionFields(value, key) {
   return filterSeneca || skipFields;
 };
 
-var cleanupUser = function cleanupUser(user) {
+export function cleanupUser(user) {
   return _.omit(user, stripSessionFields);
 };
 
-var resolveUser = function resolveUser(args, callback) {
+export function resolveUser(args, callback) {
   var hasSeneca = _.isObject(args) &&
     _.isObject(args.req$) &&
     _.isObject(args.req$.seneca);
@@ -259,7 +257,7 @@ var resolveUser = function resolveUser(args, callback) {
     resolvedUser = args.req$.user;
   }
 
-  var session = {};
+  var session: { id?: string } = {};
   if (hasSeneca && _.isObject(args.req$.seneca.login)) {
     session = args.req$.seneca.login;
   } else if (_.isObject(args.req$.session)) {
@@ -279,7 +277,7 @@ var resolveUser = function resolveUser(args, callback) {
   return callback(null, user, session);
 };
 
-var resolveLogin = function resolveLogin(args, callback) {
+export function resolveLogin(args, callback) {
   if (!_.isObject(args) ||
     !_.isObject(args.req$) ||
     !_.isObject(args.req$.seneca) ||
@@ -306,13 +304,14 @@ var getClosedOrDate = function getClosedOrDate() {
   return closedOr;
 };
 
-var extractInfoFromDevice = function extractInfoFromDevice(device) {
+export function extractInfoFromDevice(device) {
   var maxDaysSinceEvent = 120;
-  var info = {};
-  info.appVer = "Unknown";
-  info.osVer = "Unknown";
-  info.env = "beta";
-  info.daysSinceEvent = maxDaysSinceEvent; // max days
+  var info = {
+    appVer: "Unknown",
+    osVer: "Unknown",
+    env:"beta",
+    daysSinceEvent: maxDaysSinceEvent, // max days
+  };
 
   var unixDate = moment().valueOf() / 1000.0;
   var dayAsSeconds = 60 * 60 * 24;
@@ -365,7 +364,7 @@ var extractInfoFromDevice = function extractInfoFromDevice(device) {
   return info;
 };
 
-var headersToDevice = function headersToDevice(token, headers) {
+export function headersToDevice(token, headers) {
   var env = "production";
   if (_.has(headers, "x-tc-apn-environment") &&
     headers["x-tc-apn-environment"] === "beta") {
@@ -408,7 +407,7 @@ var headersToDevice = function headersToDevice(token, headers) {
   return deviceInfo;
 };
 
-var logUserDevice = function logUserDevice(postUrl, authToken, user, session, headers) {
+export function logUserDevice(postUrl, authToken, user, session, headers) {
   var device = headersToDevice("", headers);
   var info = extractInfoFromDevice(device);
 
@@ -433,7 +432,7 @@ var logUserDevice = function logUserDevice(postUrl, authToken, user, session, he
   return requestPost(postUrl, authToken, item);
 };
 
-var requestPost = function requestPost(postUrl, authToken, item, callback) {
+export function requestPost(postUrl, authToken, item, callback?) {
   if (!_.isFunction(callback)) {
     callback = function defaultCallback() {
       // Empty
@@ -469,28 +468,4 @@ var configureMomentOpts = function configureMomentOpts() {
       yy: "%dy"
     }
   });
-};
-
-module.exports = {
-  calculateOffsetFromTime: calculateOffsetFromTime,
-  fixObjectBooleanKey: fixObjectBooleanKey,
-  sortWebListsForCollection: sortWebListsForCollection,
-  joinParentChildCollections: joinParentChildCollections,
-  itemIsTrue: itemIsTrue,
-  isAdmin: isAdmin,
-  isSuper: isSuper,
-  isActive: isActive,
-  verifyJson: verifyJson,
-  makeId: makeId,
-  hasFeature: hasFeature,
-  isItemValidOnMap: isItemValidOnMap,
-  resolveUser: resolveUser,
-  resolveLogin: resolveLogin,
-  getClosedOrDate: getClosedOrDate,
-  cleanupUser: cleanupUser,
-  extractInfoFromDevice: extractInfoFromDevice,
-  headersToDevice: headersToDevice,
-  logUserDevice: logUserDevice,
-  configureMomentOpts: configureMomentOpts,
-  requestPost: requestPost
 };

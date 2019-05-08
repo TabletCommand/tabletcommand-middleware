@@ -1,6 +1,4 @@
-"use strict";
-
-var _ = require("lodash");
+import _ = require("lodash");
 var assert = require("chai").assert;
 
 var tokenSession = require("../index").session.token;
@@ -14,7 +12,7 @@ describe("Token Session", function() {
       headers: {
         "x-tc-auth-token": testToken
       }
-    };
+    } as unknown as Express.Request;
 
     var session = tokenSession([{
       token: testToken,
@@ -30,7 +28,7 @@ describe("Token Session", function() {
   });
 
   it("no user if no tokens were provided", function(done) {
-    var req = {};
+    var req = {} as unknown as Express.Request;;
     var session = tokenSession([{
       "a": "b"
     }]);

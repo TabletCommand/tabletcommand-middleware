@@ -36,7 +36,7 @@ const serverOnError = function serverOnError(error) {
 const serverOnListening = function serverOnListening(startTime, server) {
   return function onListeningFunc() {
     const address = server.address();
-    console.log(`Server listening on ${address.address}:${address.port}. Start time: ${(new Date() - startTime)} ms.`);
+    console.log(`Server listening on ${address.address}:${address.port}. Start time: ${(new Date().valueOf() - startTime)} ms.`);
   };
 };
 
@@ -47,7 +47,7 @@ const redisOnError = function redisOnError(err) {
 
 const redisOnConnect = function redisOnConnect(config, startTime, mongoose, mongooseOnOpen) {
   return function redisOnConnectFunc() {
-    console.log(`Redis connected after ${(new Date() - startTime)}ms.`);
+    console.log(`Redis connected after ${(new Date().valueOf() - startTime)}ms.`);
 
     mongoose.connect(config.mongoUrl, {
       useMongoClient: true

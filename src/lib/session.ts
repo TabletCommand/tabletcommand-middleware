@@ -1,12 +1,8 @@
-"use strict";
-
-// cSpell:words apikey tabletcommand
-
-const _ = require("lodash");
-const helpers = require("./helpers");
+import * as _  from "lodash";
+import * as helpers from "./helpers";
 const debug = require("debug")("tabletcommand-middleware:session");
 
-module.exports = function(store) {
+export function session(store) {
   const sessionCookieName = "seneca-login";
 
   const detectApiKey = function detectApiKey(headers, query, callback) {
@@ -108,3 +104,5 @@ module.exports = function(store) {
     authBySenecaCookie: authBySenecaCookie
   };
 };
+
+export default session;

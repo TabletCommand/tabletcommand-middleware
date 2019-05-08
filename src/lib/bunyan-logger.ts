@@ -1,8 +1,6 @@
-"use strict";
+import bunyan from "bunyan";
 
-const bunyan = require("bunyan");
-
-const logger = function loggerFunc(name, filePath, logToConsole) {
+export function logger(name, filePath, logToConsole) {
   let streams = [];
 
   if (logToConsole) {
@@ -32,7 +30,7 @@ const logger = function loggerFunc(name, filePath, logToConsole) {
   return logger;
 };
 
-const middleware = function (loggerInstance) {
+export function middleware (loggerInstance) {
   return function accessLogMiddleware(req, res, next) {
     // This doesn't fire the log immediately, but waits until the response is finished
     // This means we have a chance of logging the response code
@@ -50,9 +48,4 @@ const middleware = function (loggerInstance) {
     });
     next();
   };
-};
-
-module.exports = {
-  logger: logger,
-  middleware: middleware
 };

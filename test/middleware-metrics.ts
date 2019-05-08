@@ -1,6 +1,4 @@
-"use strict";
-
-var assert = require("chai").assert;
+import { assert } from "chai"
 
 var metrics = require("../index").metrics();
 

@@ -1,8 +1,4 @@
-"use strict";
-
-// cSpell:words mockgoose tabletcommand backend apikey
-
-const assert = require("chai").assert;
+import { assert } from "chai";
 
 const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
@@ -78,7 +74,7 @@ describe("Session", function() {
 
   context("authByApiKey", function() {
     it("not resolved if no api key is present", function(done) {
-      let fakeReq = {};
+      let fakeReq = {} as unknown as Express.Request;;
       let fakeRes = {};
       session.authByApiKey(fakeReq, fakeRes, function(err, department) {
         assert.isNull(err);
@@ -93,7 +89,7 @@ describe("Session", function() {
         headers: {
           apikey: "abc"
         }
-      };
+      } as unknown as Express.Request;;
       let fakeRes = {};
       session.authByApiKey(fakeReq, fakeRes, function(err, department) {
         assert.isNull(err);
@@ -108,8 +104,8 @@ describe("Session", function() {
         headers: {
           apikey: testApiKey
         }
-      };
-      let fakeRes = {};
+      } as unknown as Express.Request;
+      let fakeRes = {} as Express.Response;
       session.authByApiKey(fakeReq, fakeRes, function(err, department) {
         assert.isNull(err);
         assert.isObject(department);
@@ -144,7 +140,7 @@ describe("Session", function() {
 
   context("authBySenecaCookie", function() {
     it("not resolved if no session token is present", function(done) {
-      let fakeReq = {};
+      let fakeReq = {} as unknown as Express.Request;;
       let fakeRes = {};
       session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
         assert.isNull(err);
@@ -163,7 +159,7 @@ describe("Session", function() {
       cookies[session.sessionCookieName] = "abcd";
       let fakeReq = {
         cookies: cookies
-      };
+      } as unknown as Express.Request;;
       let fakeRes = {};
       session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
         assert.isNull(err);
@@ -182,7 +178,7 @@ describe("Session", function() {
       cookies[session.sessionCookieName] = testToken;
       let fakeReq = {
         cookies: cookies
-      };
+      } as unknown as Express.Request;;
       let fakeRes = {};
       session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
         assert.isNull(err);
@@ -190,7 +186,7 @@ describe("Session", function() {
         assert.isObject(user);
         assert.isObject(department);
         assert.isObject(fakeReq.session);
-        assert.isObject(fakeReq.login);
+        assert.isObject((fakeReq as any).login);
         assert.isObject(fakeReq.user);
         assert.isObject(fakeReq.department);
         assert.equal(data.session.token, testToken);

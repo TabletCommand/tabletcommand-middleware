@@ -1,12 +1,10 @@
-"use strict";
-
 var _ = require("lodash");
 var helpers = require("../lib/helpers");
 
 // A request is authorized if req.department is defined
 // That is populated by the session middleware
 // based on API token or user session token
-var authDepartment = function authDepartment(req, res, next) {
+export function authDepartment(req, res, next) {
   var deptNotDefined = _.isUndefined(req.department) || _.isNull(req.department);
   if (deptNotDefined) {
     var err = new Error("Not Authorized");
@@ -16,8 +14,9 @@ var authDepartment = function authDepartment(req, res, next) {
 
   return next();
 };
+export const auth = authDepartment;
 
-var authSuper = function authSuper(req, res, next) {
+export function authSuper(req, res, next) {
   var shouldAllow = _.isObject(req.user) && helpers.isSuper(req.user);
   if (!shouldAllow) {
     var err = new Error("Not Authorized");
@@ -28,7 +27,7 @@ var authSuper = function authSuper(req, res, next) {
   return next();
 };
 
-var authUser = function authUser(req, res, next) {
+export function authUser(req, res, next) {
   var shouldAllow = _.isObject(req.user) && helpers.isActive(req.user);
   if (!shouldAllow) {
     var err = new Error("Not Authorized");
@@ -39,13 +38,13 @@ var authUser = function authUser(req, res, next) {
   return next();
 };
 
-var notFoundHandler = function notFoundHandler(req, res, next) {
+export function notFoundHandler(req, res, next) {
   var err = new Error("Not Found");
   err.status = 404;
   return next(err);
 };
 
-var notImplementedHandler = function notImplementedHandler(req, res, next) {
+export function notImplementedHandler(req, res, next) {
   var err = new Error("Not Implemented");
   err.status = 444;
   return next(err);
@@ -53,7 +52,7 @@ var notImplementedHandler = function notImplementedHandler(req, res, next) {
 
 // development error handler
 // will print stacktrace
-var developmentErrorHandler = function developmentErrorHandler(err, req, res, next) {
+export function developmentErrorHandler(err, req, res, next) {
   res.status(err.status || 500);
   res.render("error", {
     message: err.message,
@@ -63,21 +62,10 @@ var developmentErrorHandler = function developmentErrorHandler(err, req, res, ne
 
 // production error handler
 // no stacktraces leaked to user
-var productionErrorHandler = function productionErrorHandler(err, req, res, next) {
+export function productionErrorHandler(err, req, res, next) {
   res.status(err.status || 500);
   res.render("error", {
     message: err.message,
     error: {}
   });
-};
-
-module.exports = {
-  auth: authDepartment,
-  authDepartment: authDepartment,
-  authSuper: authSuper,
-  authUser: authUser,
-  notFoundHandler: notFoundHandler,
-  notImplementedHandler: notImplementedHandler,
-  developmentErrorHandler: developmentErrorHandler,
-  productionErrorHandler: productionErrorHandler
 };

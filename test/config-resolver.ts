@@ -1,6 +1,4 @@
-"use strict";
-
-const _ = require("lodash");
+import _ = require("lodash");
 const assert = require("chai").assert;
 
 const configResolver = require("../").configResolver();

@@ -1,5 +1,5 @@
 "use strict";
-
+export {}
 // cSpell:words mockgoose tabletcommand backend
 
 const assert = require("chai").assert;

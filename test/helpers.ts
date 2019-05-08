@@ -1,4 +1,4 @@
-"use strict";
+export {}
 
 var _ = require("lodash");
 var assert = require("chai").assert;

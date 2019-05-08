@@ -1,6 +1,6 @@
 "use strict";
 
-module.exports = function customSession(Department, Session, User) {
+export function customSession(Department, Session, User) {
   var _ = require("lodash");
 
   var departmentForLogging = function departmentForLogging(department) {
@@ -19,9 +19,10 @@ module.exports = function customSession(Department, Session, User) {
       return callback(null, null);
     }
 
-    var query = {};
-    query.token = req.cookies["seneca-login"];
-    query.active = true;
+    var query = {
+      token: req.cookies["seneca-login"],
+      active: true
+    };
 
     return Session.findOne(query, function findSessionCallback(err, dbObject) {
       if (_.isObject(dbObject) && _.size(dbObject) > 0) {
@@ -43,9 +44,10 @@ module.exports = function customSession(Department, Session, User) {
       return callback(null, null);
     }
 
-    var query = {};
-    query._id = session.user;
-    query.active = true;
+    var query = {
+      _id: session.user,
+      active: true
+    };
 
     return User.findOne(query, function findUserCallback(err, dbObject) {
       if (_.isObject(dbObject) && _.size(dbObject) > 0) {
@@ -144,3 +146,4 @@ module.exports = function customSession(Department, Session, User) {
     });
   };
 };
+export default customSession;
