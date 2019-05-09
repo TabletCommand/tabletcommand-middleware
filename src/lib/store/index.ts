@@ -1,5 +1,5 @@
 import { DepartmentModel, SessionModel, UserModel, Department, Session, User } from "tabletcommand-backend-models";
-import { SimpleCallback } from "../../types";
+import { SimpleCallback } from "../../types/types";
 import { RedisClient } from "redis";
 import _ from "lodash";
 import databaseModule from "./database";

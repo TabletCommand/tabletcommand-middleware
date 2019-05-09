@@ -1,5 +1,5 @@
 import { Department, DepartmentModel, SessionModel, Session, UserModel, User } from "tabletcommand-backend-models";
-import { SimpleCallback } from "../../types";
+import { SimpleCallback } from "../../types/types";
 import _ from 'lodash'
 import debugModule from 'debug'
 

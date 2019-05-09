@@ -4,7 +4,7 @@ import moment from "moment-timezone";
 import * as helpers from "./helpers";
 import redis, { RedisClient } from "redis";
 import { Department, Location, FieldsOfDocument } from "tabletcommand-backend-models";
-import { SimpleCallback } from "../types";
+import { SimpleCallback } from "../types/types";
 
 export function client(config: { redis: string; }) {
   return redis.createClient(config.redis);

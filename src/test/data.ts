@@ -2,7 +2,7 @@
 
 import { Department, BackendModels, MongooseModule, User } from "tabletcommand-backend-models";
 import { RedisClient } from "redis";
-import { SimpleCallback } from "../src/types";
+import { SimpleCallback } from "../types/types";
 import { Mockgoose } from 'mockgoose'
 
 // cSpell:words mockgoose tabletcommand backend signup apikey fdid flushall

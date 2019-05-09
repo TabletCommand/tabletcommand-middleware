@@ -1,7 +1,9 @@
-import _ = require("lodash");
-var assert = require("chai").assert;
+import _ from "lodash";
+import { assert } from "chai";
+import { session } from "../index"
+import express from "express";
 
-var tokenSession = require("../index").session.token;
+var tokenSession = session.token;
 
 describe("Token Session", function() {
   it("sets correct user", function(done) {
@@ -12,14 +14,14 @@ describe("Token Session", function() {
       headers: {
         "x-tc-auth-token": testToken
       }
-    } as unknown as Express.Request;
+    } as unknown as express.Request;
 
     var session = tokenSession([{
       token: testToken,
       username: testUsername
     }]);
 
-    return session(req, {}, function() {
+    return session(req, {} as express.Response, function() {
       assert.isObject(req.user);
       assert.equal(req.user.username, testUsername);
       assert.equal(req.user.token, testToken);
@@ -31,8 +33,8 @@ describe("Token Session", function() {
     var req = {} as unknown as Express.Request;;
     var session = tokenSession([{
       "a": "b"
-    }]);
-    return session(req, {}, function() {
+    } as any]);
+    return session(req as express.Request, {} as express.Response, function() {
       assert.isTrue(!_.isObject(req.user));
       return done();
     });

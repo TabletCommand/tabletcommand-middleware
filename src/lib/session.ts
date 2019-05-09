@@ -4,13 +4,13 @@ import express = require("express");
 import { Session, User, Department } from "tabletcommand-backend-models";
 import { StoreModule } from "./store";
 import debugModule from 'debug'
-import { SimpleCallback } from "../types";
+import { SimpleCallback } from "../types/types";
 
 export function session(store: StoreModule) {
   const sessionCookieName = "seneca-login";
   const debug = debugModule("tabletcommand-middleware:session");
 
-  function detectApiKey(headers: Record<string, string>, query: Record<string, string>) {
+  function detectApiKey(headers: Record<string, string> | null, query: Record<string, string> | null) {
     function extractApiKey(obj: Record<string, string>) {
       let apiKey = "";
       if (_.has(obj, "apiKey")) {
@@ -62,8 +62,7 @@ export function session(store: StoreModule) {
     }
 
     return store.findDepartmentByApiKey(apiKey, function(err, department) {
-      const hasDepartment = _.isObject(department) && helpers.isActive(department);
-      if (hasDepartment) {
+      if (_.isObject(department) && helpers.isActive(department)) {
         req.department = department;
         req.departmentLog = departmentForLogging(department);
       }

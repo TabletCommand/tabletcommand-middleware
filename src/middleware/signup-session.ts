@@ -2,7 +2,7 @@
 import { DepartmentModel, Department, ModelItemType, SchemaItemType, FieldsOfDocument } from 'tabletcommand-backend-models';
 import express from 'express';
 import _  from "lodash";
-import { SimpleCallback } from '../types';
+import { SimpleCallback } from '../types/types';
 
 export function customSession(Department: DepartmentModel) {
   

@@ -1,5 +1,5 @@
 import { Department, User, Session } from "tabletcommand-backend-models";
-import { UserInfo } from "./middleware/token-session";
+import { UserInfo } from "../middleware/token-session";
 
 declare global  {
 

@@ -1,5 +1,5 @@
 interface NodeRequireFunction {
-    //(id: string): never;
+    (id: string): never;
 }
 
 interface Error {

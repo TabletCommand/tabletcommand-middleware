@@ -3,8 +3,8 @@ import { MongooseModule } from "tabletcommand-backend-models";
 import { AddressInfo } from 'net';
 
 // cSpell:words nmea
-
-const debug = require("debug")("server-nmea:storage");
+import debugModule from "debug";
+const debug = debugModule("server-nmea:storage");
 
 export function mongooseOnError(err: Error) {
   console.log(`Mongoose default connection error: ${err}`);

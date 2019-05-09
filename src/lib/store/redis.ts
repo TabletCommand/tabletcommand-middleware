@@ -1,7 +1,7 @@
 import { RedisClient } from "redis";
 import _ from "lodash";
 import debugModule from "debug"
-import { SimpleCallback } from "../../types";
+import { SimpleCallback } from "../../types/types";
 import { Session, Department, User } from "tabletcommand-backend-models";
 
 export function redis(client: RedisClient) {

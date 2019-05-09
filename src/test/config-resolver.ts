@@ -1,7 +1,8 @@
-import _ = require("lodash");
-const assert = require("chai").assert;
+import _ from "lodash";
+import { assert } from "chai";
 
-const configResolver = require("../").configResolver();
+import { configResolver as configResolverModule } from "../"
+const configResolver = configResolverModule();
 
 describe("config-resolver", function() {
   context("redisURL", function() {

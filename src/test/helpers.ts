@@ -1,9 +1,6 @@
-export {}
-
-var _ = require("lodash");
-var assert = require("chai").assert;
-
-var helpers = require("../index").helpers;
+import _ from "lodash";
+import { assert } from "chai";
+import { helpers } from "../index";
 
 describe("Helpers", function() {
   it("fixObjectBooleanKey", function(done) {
@@ -17,19 +14,19 @@ describe("Helpers", function() {
 
     var t1 = _.clone(obj);
     helpers.fixObjectBooleanKey(t1, "key1", false);
-    assert.isTrue(t1.key1 === true);
+    assert.isTrue(t1.key1 as unknown === true);
 
     var t2 = _.clone(obj);
     helpers.fixObjectBooleanKey(t2, "key2", false);
-    assert.isTrue(t2.key2 === true);
+    assert.isTrue(t2.key2  as unknown === true);
 
     var t3 = _.clone(obj);
     helpers.fixObjectBooleanKey(t3, "key3", true);
-    assert.isTrue(t3.key3 === false);
+    assert.isTrue(t3.key3  as unknown === false);
 
     var t4 = _.clone(obj);
     helpers.fixObjectBooleanKey(t4, "key4", true);
-    assert.isTrue(t4.key4 === false);
+    assert.isTrue(t4.key4  as unknown === false);
 
     var t5 = _.clone(obj);
     helpers.fixObjectBooleanKey(t5, "key5", true);

@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { DepartmentModel, SessionModel, UserModel, Department, Session, User } from "tabletcommand-backend-models";
 import express = require("express");
-import { SimpleCallback } from "../types";
+import { SimpleCallback } from "../types/types";
 import { isSuper } from "../lib/helpers";
 export function customSession(Department: DepartmentModel, Session: SessionModel, User: UserModel) {
   

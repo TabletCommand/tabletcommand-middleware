@@ -3,22 +3,29 @@ import { assert } from "chai";
 
 import mongoose from "mongoose";
 import redisClient from "redis-js";
-import storeModule from "../src/lib/store"
+import storeModule from "../lib/store"
 import dataModule from './data';
 
 mongoose.Promise = require("bluebird");
-const models = require("tabletcommand-backend-models");
-
-let Mockgoose = require("mockgoose").Mockgoose;
+import { connect, BackendModels } from "tabletcommand-backend-models";
+import { db } from "../config"
+import { Mockgoose } from "mockgoose";
 let mockgoose = new Mockgoose(mongoose);
 
-const store = storeModule(models.Department, models.Session, models.User, redisClient);
-const data = dataModule(mockgoose, mongoose, models, redisClient);
-
-const testApiKey = data.apiKey;
-const testToken = data.token;
-
 describe("Store", function() {
+  let models : BackendModels;
+  let store: ReturnType<typeof storeModule> ;
+  let data: ReturnType<typeof dataModule>;
+
+  const testApiKey = data.apiKey;
+  const testToken = data.token;
+
+
+  before(async () => {
+    models = (await connect(db)).models;
+    store = storeModule(models.Department, models.Session, models.User, redisClient);
+    data = dataModule(mockgoose, mongoose, models, redisClient);
+  });
   beforeEach(function(done) {
     data.beforeEach(done);
   });

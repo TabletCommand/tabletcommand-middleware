@@ -1,6 +1,7 @@
 import _ from "lodash";
-import moment from "moment-timezone"
-var debug = require("debug")("massive-tyrion:helpers");
+import moment from "moment-timezone";
+import debugModule from "debug";
+const  debug = debugModule("massive-tyrion:helpers");
 import request from "request";
 import { Response, Request } from 'express'
 import { User, Session, Department } from "tabletcommand-backend-models";
@@ -17,7 +18,7 @@ export function calculateOffsetFromTime(time: number) {
   };
 };
 
-export function fixObjectBooleanKey<K extends PropertyKey>(obj: Partial<Record<K, boolean>>, key: K, defaultValue: boolean) {
+export function fixObjectBooleanKey<K extends PropertyKey>(obj: Partial<Record<K, number | string | boolean>>, key: K, defaultValue: boolean) {
   if (!_.has(obj, key)) {
     obj[key] = defaultValue;
   }
@@ -32,7 +33,7 @@ export function fixObjectBooleanKey<K extends PropertyKey>(obj: Partial<Record<K
   }
 };
 
-function fixObjectNumberKey<K extends PropertyKey>(obj: Partial<Record<K, number>>, key: K, defaultValue: number) {
+function fixObjectNumberKey<K extends PropertyKey>(obj: Partial<Record<K, string | number>>, key: K, defaultValue: number) {
   if (!_.has(obj, key)) {
     obj[key] = defaultValue;
     return;
@@ -172,7 +173,7 @@ export function joinParentChildCollections<
 
   return parents;
 };
-type BooleanLike = boolean | ("true" | "false") | (1 | 0)
+type BooleanLike = boolean | string | number;
 export function itemIsTrue(item: Record<string, string[] | string>, key: string): boolean
 export function itemIsTrue<K extends PropertyKey>(item: Partial<Record<K, BooleanLike>> | null, key: K): boolean
 export function itemIsTrue(item: Record<string, BooleanLike | string | string[]> | null, key: string) {
