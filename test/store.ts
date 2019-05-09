@@ -1,17 +1,19 @@
 "use strict";
-const assert = require("chai").assert;
+import { assert } from "chai";
 
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
+import redisClient from "redis-js";
+import storeModule from "../src/lib/store"
+import dataModule from './data';
+
 mongoose.Promise = require("bluebird");
 const models = require("tabletcommand-backend-models");
 
 let Mockgoose = require("mockgoose").Mockgoose;
 let mockgoose = new Mockgoose(mongoose);
 
-const redisClient = require("redis-js");
-
-const store = require("../dist/lib/store")(models.Department, models.Session, models.User, redisClient);
-const data = require("./data")(mockgoose, mongoose, models, redisClient);
+const store = storeModule(models.Department, models.Session, models.User, redisClient);
+const data = dataModule(mockgoose, mongoose, models, redisClient);
 
 const testApiKey = data.apiKey;
 const testToken = data.token;

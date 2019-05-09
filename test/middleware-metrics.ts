@@ -1,7 +1,8 @@
 import { assert } from "chai"
 
-var metrics = require("../index").metrics();
+import { metrics as metricsFn } from "../index";
 
+const metrics = metricsFn();
 describe("Metrics Middleware", function() {
   it("removes uuid from end of paths", function(done) {
     const path = "api.user.daafe605-feac-add0-ad0e-89023d48deab";

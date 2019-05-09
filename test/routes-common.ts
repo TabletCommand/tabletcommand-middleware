@@ -1,9 +1,8 @@
-"use strict";
+import _ from "lodash";
+import { assert } from "chai";
 
-import _ = require("lodash");
-var assert = require("chai").assert;
-
-var routesCommon = require("../index").routesCommon;
+import { routesCommon } from "../index";
+import express from "express";
 
 describe("routesCommon", function() {
   context("authDepartment", function() {
@@ -13,15 +12,15 @@ describe("routesCommon", function() {
           department: "Test Department",
           departmentId: "abc1234"
         }
-      };
-      return routesCommon.authDepartment(reqObj, {}, function next(err) {
+      } as unknown as express.Request;
+      return routesCommon.authDepartment(reqObj, {} as express.Response, function next(err) {
         assert.isUndefined(err, "Err should not be set");
         return done();
       });
     });
 
     it("isDenied", function(done) {
-      return routesCommon.authDepartment({}, {}, function next(err) {
+      return routesCommon.authDepartment({} as express.Request, {} as express.Response, function next(err) {
         assert.instanceOf(err, Error);
         assert.equal(err.status, 401);
         return done();
@@ -36,14 +35,14 @@ describe("routesCommon", function() {
           nick: "verygoodguy",
           superuser: true
         }
-      };
-      return routesCommon.authSuper(reqObj, {}, function next(err) {
+      } as unknown as express.Request;
+      return routesCommon.authSuper(reqObj, {} as express.Response, function next(err) {
         assert.isUndefined(err, "Err should not be set");
         return done();
       });
     });
     it("isDenied", function(done) {
-      return routesCommon.authSuper({}, {}, function next(err) {
+      return routesCommon.authSuper({}  as express.Request, {} as express.Response, function next(err) {
         assert.instanceOf(err, Error);
         assert.equal(err.status, 401);
         return done();
@@ -57,10 +56,10 @@ describe("routesCommon", function() {
         nick: "hello",
         active: true
       }
-    };
+    } as express.Request;
 
     it("isAllowed", function(done) {
-      return routesCommon.authUser(req, {}, function next(err) {
+      return routesCommon.authUser(req, {} as express.Response, function next(err) {
         assert.isUndefined(err, "Err should not be set");
         return done();
       });
@@ -69,7 +68,7 @@ describe("routesCommon", function() {
     it("isDenied", function(done) {
       var reqd = _.clone(req);
       reqd.user.active = false;
-      return routesCommon.authUser(reqd, {}, function next(err) {
+      return routesCommon.authUser(reqd, {} as express.Response, function next(err) {
         assert.instanceOf(err, Error);
         assert.equal(err.status, 401);
         return done();

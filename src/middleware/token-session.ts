@@ -75,3 +75,5 @@ export function tokenSession(allowedTokens: Array<{ token: string, username: str
     return validateToken(null, tokens, req, res, next);
   };
 };
+
+export default tokenSession;

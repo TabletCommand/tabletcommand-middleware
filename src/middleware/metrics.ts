@@ -11,7 +11,7 @@ const monitorRequest = expressStatsd();
 // Add an express-statsd key that looks like http.post.api.hello.world for a HTTP POST to /api/hello/world URL
 // See https://github.com/uber/express-statsd
 
-export function metricsModule(filterFunction: (p: string) => void) {
+export function metricsModule(filterFunction?: (p: string) => void) {
   var defaultFilter = function defaultFilter(path: string, callback: (p: string) => void) {
     const uuidRegex = /[-a-f\d]{36}/i;
     const mongoIdRegex = /[a-f\d]{24}/i;

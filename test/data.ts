@@ -1,11 +1,16 @@
 "use strict";
 
+import { Department, BackendModels, MongooseModule, User } from "tabletcommand-backend-models";
+import { RedisClient } from "redis";
+import { SimpleCallback } from "../src/types";
+import { Mockgoose } from 'mockgoose'
+
 // cSpell:words mockgoose tabletcommand backend signup apikey fdid flushall
 
-module.exports = function(mockgoose, mongoose, models, redisClient) {
+export function data(mockgoose: Mockgoose, mongoose: MongooseModule, models: BackendModels, redisClient: RedisClient) {
   const apiKey = "secretapikey1990";
   const departmentId = "5195426cc4e016a988000965";
-  const d = {
+  const d: Partial<Department> = {
     "_id": departmentId,
     "department": "Test Department",
     "signupDomains": [],
@@ -27,7 +32,7 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
     "city": "Denver",
     "fdid": "06905",
     "uuid": "e4c5873c-1684-47a9-ad2d-81ded6e7ac15",
-    "modified_date": "2017-04-21T03:00:03.514"
+    // "modified_date": "2017-04-21T03:00:03.514"
   };
 
   const userId = "535633c3c0384d0000002082";
@@ -62,20 +67,20 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
     "isPro": true
   };
 
-  const prepareTestData = function prepareTestData(callback) {
-    let testDepartment = models.Department(d);
+  const prepareTestData = function prepareTestData(callback: SimpleCallback<User>) {
+    let testDepartment = new models.Department(d);
     testDepartment.save(function(err, result) {
       if (err) {
         return callback(err);
       }
 
-      let testSession = models.Session(s);
+      let testSession = new models.Session(s);
       testSession.save(function(err, result) {
         if (err) {
           return callback(err);
         }
 
-        let testUser = models.User(u);
+        let testUser = new models.User(u);
         testUser.save(function(err, result) {
           return callback(err, result);
         });
@@ -83,15 +88,15 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
     });
   };
 
-  const afterEach = function afterEach(callback) {
+  const afterEach = function afterEach(callback: SimpleCallback<unknown>) {
     mockgoose.helper.reset().then(function() {
       redisClient.flushall(function() {
-        callback();
+        callback(undefined);
       });
     });
   };
 
-  const beforeEach = function beforeEach(callback) {
+  const beforeEach = function beforeEach(callback: SimpleCallback<unknown>) {
     mockgoose.prepareStorage().then(function() {
       mongoose.connect("mongodb://127.0.0.1:27017/TestingDB", {
         useMongoClient: true // this option silents the warning, but does not cleanup the data
@@ -115,3 +120,4 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
     afterEach: afterEach
   };
 };
+export default data;
