@@ -5,6 +5,7 @@ import request from "request";
 import { Response, Request } from 'express'
 import { User, Session, Department } from "tabletcommand-backend-models";
 import express = require("express");
+import { UserInfo } from "../middleware/token-session";
 
 export function calculateOffsetFromTime(time: number) {
   var serverUnix = new Date().valueOf() / 1000;
@@ -49,10 +50,10 @@ function fixObjectStringKey<K extends PropertyKey>(obj: Partial<Record<K, string
   }
 };
 
-export function sortWebListsForCollection<T extends { 
-  isMandatory?: boolean, 
-  active?: boolean, 
-  position?: number, 
+export function sortWebListsForCollection<T extends {
+  isMandatory?: boolean,
+  active?: boolean,
+  position?: number,
   friendly_id? : string
 }>(list: T[], collectionName: string): T[] {
   if (!_.isArray(list)) {
@@ -90,7 +91,28 @@ export function sortWebListsForCollection<T extends {
   return list;
 };
 
-export function joinParentChildCollections(parents, children, parentApiId, parentLocalId, parentName, parentUuid, parentDest) {
+export function joinParentChildCollections<
+      //TParent extends Record<"local_id" | "id" | "name" | "uuid", TChild[keyof TChild]>,
+      TChild extends Record<TParentLocalId | TParentApiId | TParentName | TParentUuid, string>,
+      TParent extends {
+          "local_id" : TChild[TParentLocalId]
+          "uuid": TChild[TParentUuid]
+          "name": TChild[TParentName]
+          "id": TChild[TParentApiId]
+      } & Record<TParentDest, TChild[]>,
+      TParentLocalId extends PropertyKey, 
+      TParentApiId extends PropertyKey, 
+      TParentName extends PropertyKey, 
+      TParentUuid extends PropertyKey,
+      TParentDest extends keyof TParent>(
+  parents: Array<TParent>,
+  children: Array<TChild>,
+  parentApiId: TParentApiId,
+  parentLocalId: TParentLocalId,
+  parentName: TParentName,
+  parentUuid: TParentUuid,
+  parentDest: TParentDest) {
+
   var mapLocalIdItems = _.map(_.filter(children, function(item) {
     return _.has(item, parentLocalId) && !_.has(item, parentApiId);
   }), function(item) {
@@ -109,7 +131,7 @@ export function joinParentChildCollections(parents, children, parentApiId, paren
     };
   });
 
-  var unmergedItems = _.flatten([mapApiIdItems, mapLocalIdItems]);
+  var unmergedItems = _.flatten([mapApiIdItems as any as typeof mapLocalIdItems, mapLocalIdItems]);
   var reducedIds = _.reduce(unmergedItems, function(memo, i) {
     if (!_.has(memo, i.id)) {
       memo[i.id] = [];
@@ -117,11 +139,11 @@ export function joinParentChildCollections(parents, children, parentApiId, paren
 
     memo[i.id].push(i.item);
     return memo;
-  }, {});
+  }, {} as Record<string, typeof children>);
 
   _.each(parents, function(parent) {
-    var itemsByParentId = [];
-    var itemsByApiParentId = [];
+    var itemsByParentId: typeof children = [];
+    var itemsByApiParentId: typeof children = [];
     if (_.has(parent, "local_id") && _.has(reducedIds, parent.local_id)) {
       itemsByParentId = reducedIds[parent.local_id];
     }
@@ -145,7 +167,7 @@ export function joinParentChildCollections(parents, children, parentApiId, paren
       return item;
     });
 
-    parent[parentDest] = enhancedItems;
+    parent[parentDest] = enhancedItems as TParent[TParentDest];
   });
 
   return parents;
@@ -238,11 +260,12 @@ function stripSessionFields(value: any, key: string) {
   return filterSeneca || skipFields;
 };
 
-export function cleanupUser(user: User) {
-  return _.omit(user, stripSessionFields);
+export function cleanupUser(user: UserInfo) {
+  // Usage assertions, the definitions don't seem to know about this overload.
+  return _.omit(user, stripSessionFields as any);
 };
 
-export function resolveUser(args: { req$: express.Request, user: User }, callback: (err: Error, user?: User, session?: Session) => void): void {
+export function resolveUser(args: { req$: express.Request, user: UserInfo }, callback: (err: Error, user?: UserInfo, session?: Session) => void): void {
   var hasSeneca = _.isObject(args) &&
     _.isObject(args.req$) &&
     _.isObject(args.req$.seneca);
@@ -288,8 +311,8 @@ export function resolveUser(args: { req$: express.Request, user: User }, callbac
   return callback(null, user, session);
 };
 
-type ResolveLoginArg = { req$: { seneca: { login: User; }; }; }
-export function resolveLogin(args: ResolveLoginArg): User {
+type ResolveLoginArg = { req$: { seneca: { login: UserInfo; }; }; }
+export function resolveLogin(args: ResolveLoginArg): UserInfo {
   if (!_.isObject(args) ||
     !_.isObject(args.req$) ||
     !_.isObject(args.req$.seneca) ||
@@ -437,14 +460,14 @@ export function logUserDevice(postUrl: string, authToken: string, user: User, se
   var filter: string[] = [];
 
   var shouldFilter = false;
-  if (shouldFilter && _.contains(filter, item.appVer)) {
+  if (shouldFilter && (_ as any).contains(filter, item.appVer)) {
     return;
   }
 
   return requestPost(postUrl, authToken, item);
 };
 
-export function requestPost(postUrl: string, authToken: string, item, callback?) {
+export function requestPost(postUrl: string, authToken: string, item: unknown, callback?: request.RequestCallback) {
   if (!_.isFunction(callback)) {
     callback = function defaultCallback() {
       // Empty

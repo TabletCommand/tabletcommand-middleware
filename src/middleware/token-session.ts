@@ -1,7 +1,17 @@
 /* jslint node: true */
 import express from "express";
 import _ from "lodash";
-
+export interface UserInfo {
+  active: boolean;
+  admin: boolean;
+  outsider: boolean;
+  username?: string;
+  token: string;
+  email: string;
+  superuser?: boolean;
+  departmentId?: string;
+  nick?: string
+}
 export function tokenSession(allowedTokens: Array<{ token: string, username: string }>) {
 
   var buildAllowedItems = function buildAllowedItems(items: Array<{ token: string, username: string }>) {
@@ -40,7 +50,7 @@ export function tokenSession(allowedTokens: Array<{ token: string, username: str
     return filtered;
   };
 
-  var validateToken = function validateToken(err:Error, tokens: Array<{ token: string }>, req: express.Request, res: express.Response, next: express.NextFunction) {
+  var validateToken = function validateToken(err:Error, tokens: Array<UserInfo>, req: express.Request, res: express.Response, next: express.NextFunction) {
     var token = "";
     if (_.has(req.headers, "x-tc-auth-token")) {
       const headerValue = req.headers["x-tc-auth-token"];

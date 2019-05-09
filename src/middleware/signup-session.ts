@@ -27,10 +27,11 @@ export function customSession(Department: DepartmentModel) {
 
     var signupKey = "";
     if (_.isObject(req.query)) {
-      if (_.has(req.query, "signupKey")) {
-        signupKey = req.query.signupKey;
+      const query: any = req.query;
+      if (_.has(query, "signupKey")) {
+        signupKey = query.signupKey;
       } else if (_.has(req.query, "signupkey")) {
-        signupKey = req.query.signupkey;
+        signupKey = query.signupkey;
       }
     }
 

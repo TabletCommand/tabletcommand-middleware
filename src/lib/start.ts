@@ -1,6 +1,6 @@
-"use strict";
-
-import express = require("express");
+import * as http from 'http'
+import { MongooseModule } from "tabletcommand-backend-models";
+import { AddressInfo } from 'net';
 
 // cSpell:words nmea
 
@@ -35,9 +35,9 @@ export function serverOnError(error: { syscall: string; code: string; }) {
   process.exit(1);
 };
 
-export function serverOnListening(startTime: number, server) {
+export function serverOnListening(startTime: number, server: http.Server) {
   return function onListeningFunc() {
-    const address = server.address();
+    const address = server.address() as AddressInfo;
     console.log(`Server listening on ${address.address}:${address.port}. Start time: ${(new Date().valueOf() - startTime)} ms.`);
   };
 };
@@ -47,7 +47,7 @@ export function redisOnError(err: Error) {
   process.exit(1);
 };
 
-export function redisOnConnect<T extends { mongoUrl: string }>(config:T, startTime: number, mongoose, mongooseOnOpen: (cfg: T, startTime: number) => void) {
+export function redisOnConnect<T extends { mongoUrl: string }>(config:T, startTime: number, mongoose: MongooseModule, mongooseOnOpen: (cfg: T, startTime: number) => (...a: any[]) => any) {
   return function redisOnConnectFunc() {
     console.log(`Redis connected after ${(new Date().valueOf() - startTime)}ms.`);
 

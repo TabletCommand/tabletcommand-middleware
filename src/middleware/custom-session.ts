@@ -102,9 +102,9 @@ export function customSession(Department: DepartmentModel, Session: SessionModel
     } else if (_.isObject(req.headers) && _.has(req.headers, "apikey")) {
       apiKey = req.headers.apikey as string;
     } else if (_.isObject(req.query) && _.has(req.query, "apikey")) {
-      apiKey = req.query.apiKey;
+      apiKey = (req.query as any).apiKey;
     } else if (_.isObject(req.query) && _.has(req.query, "apikey")) {
-      apiKey = req.query.apikey;
+      apiKey = (req.query as any).apikey;
     }
 
     if (apiKey === "") {
