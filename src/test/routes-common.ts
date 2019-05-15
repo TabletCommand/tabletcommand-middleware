@@ -7,11 +7,11 @@ import express from "express";
 describe("routesCommon", function() {
   context("authDepartment", function() {
     it("isAllowed", function(done) {
-      var reqObj = {
+      const reqObj = {
         department: {
           department: "Test Department",
-          departmentId: "abc1234"
-        }
+          departmentId: "abc1234",
+        },
       } as unknown as express.Request;
       return routesCommon.authDepartment(reqObj, {} as express.Response, function next(err) {
         assert.isUndefined(err, "Err should not be set");
@@ -30,11 +30,11 @@ describe("routesCommon", function() {
 
   context("authSuper", function() {
     it("isAllowed", function(done) {
-      var reqObj = {
+      const reqObj = {
         user: {
           nick: "verygoodguy",
-          superuser: true
-        }
+          superuser: true,
+        },
       } as unknown as express.Request;
       return routesCommon.authSuper(reqObj, {} as express.Response, function next(err) {
         assert.isUndefined(err, "Err should not be set");
@@ -51,11 +51,11 @@ describe("routesCommon", function() {
   });
 
   context("authUser", function() {
-    var req = {
+    const req = {
       user: {
         nick: "hello",
-        active: true
-      }
+        active: true,
+      },
     } as express.Request;
 
     it("isAllowed", function(done) {
@@ -66,7 +66,7 @@ describe("routesCommon", function() {
     });
 
     it("isDenied", function(done) {
-      var reqd = _.clone(req);
+      const reqd = _.clone(req);
       reqd.user.active = false;
       return routesCommon.authUser(reqd, {} as express.Response, function next(err) {
         assert.instanceOf(err, Error);

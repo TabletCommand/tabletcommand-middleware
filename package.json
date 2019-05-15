@@ -12,20 +12,24 @@
     "type": "git",
     "url": "git://github.com/bamse16/tabletcommand-middleware.git"
   },
+  "main": "build/index.js",
+  "types": "definitions/index.d.ts",
   "dependencies": {
     "@types/mongodb-uri": "^0.9.0",
     "bluebird": "^3.5.1",
     "bunyan": "^1.8.12",
-    "debug": "^2.6.8",
+    "debug": "^2.6.9",
     "express-statsd": "^0.3.0",
     "lodash": "^4.17.4",
     "moment-timezone": "^0.5.13",
     "mongodb-uri": "^0.9.7",
     "mongoose": "^4.1.10",
+    "ms": "^2.1.1",
     "redis": "^2.4.2",
     "request": "~2.79.0"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.26",
     "@types/bunyan": "^1.8.6",
     "@types/chai": "^4.1.7",
     "@types/debug": "^4.1.4",
@@ -39,6 +43,7 @@
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "chai": "^4.1.0",
+    "del": "^4.1.1",
     "eslint": "^4.3.0",
     "eslint-config-standard": "^10.2.1",
     "eslint-plugin-import": "^2.2.0",
@@ -49,13 +54,17 @@
     "eslint-plugin-standard": "^3.0.1",
     "eyes": "^0.1.8",
     "factory-lady": "~0.1.0",
-    "gulp": "^3.9.1",
+    "gulp": "^4.0.2",
     "gulp-babel": "^7.0.0",
     "gulp-eslint": "^4.0.0",
     "gulp-mocha": "^4.2.0",
+    "gulp-shell": "^0.7.0",
+    "gulp-tslint": "^8.1.4",
     "mocha": "^3.2.0",
     "mockgoose": "^7.3.3",
     "redis-js": "^0.1.2",
-    "tabletcommand-backend-models": "^1.9.1"
+    "tabletcommand-backend-models": "^1.9.1",
+    "tslint": "^5.16.0",
+    "typescript": "^3.4.5"
   }
 }

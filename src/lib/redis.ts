@@ -8,10 +8,10 @@ import { SimpleCallback } from "../types/types";
 
 export function client(config: { redis: string; }) {
   return redis.createClient(config.redis);
-};
+}
 
 function keyForDepartment(department: Department, prefix: string, callback: SimpleCallback<string>) {
-  var key = prefix + ":";
+  let key = prefix + ":";
 
   if (_.isString(department.id)) {
     key = key + department.id;
@@ -29,32 +29,32 @@ function retrieveItems(client: RedisClient, keys: string[], callback: SimpleCall
     return callback(null, []);
   }
 
-  var validKeys = _.filter(keys, function(k) {
+  const validKeys = _.filter(keys, function(k) {
     return _.isString(k) && k.length > 0;
   });
 
-  function processKeysList(client: RedisClient, items: string[], index: number, resolved: string[], callback: SimpleCallback<string[]>) : boolean {
+  function processKeysList(client: RedisClient, items: string[], index: number, resolved: string[], callback: SimpleCallback<string[]>): boolean {
     if (index >= _.size(items)) {
       callback(null, resolved);
     }
 
-    var key = items[index];
+    const key = items[index];
     return client.get(key, function(err, object) {
       if (err) {
         return callback(err, []);
       }
-      var resolvedX = _.clone(resolved);
+      const resolvedX = _.clone(resolved);
       if (!_.isNull(object) && !_.isUndefined(object)) {
         resolvedX.push(object);
       }
       return processKeysList(client, items, index + 1, resolvedX, callback);
     });
-  };
+  }
 
   return processKeysList(client, validKeys, 0, [], callback);
 }
 
-function prepareLocationItem(item: Location, callback: (err: Error, key?: string, val?: string, ttl?: number)=> void) {
+function prepareLocationItem(item: Location, callback: (err: Error, key?: string, val?: string, ttl?: number) => void) {
   if (!_.isString(item.departmentId) || item.departmentId.length === 0) {
     return callback(new Error(`Invalid departmentId ${item}`));
   }
@@ -63,12 +63,12 @@ function prepareLocationItem(item: Location, callback: (err: Error, key?: string
     return callback(new Error(`Invalid userId ${item}`));
   }
 
-  var ttl = 60 * 60 * 24; // 24h
-  var departmentId = item.departmentId;
-  var userId = item.userId;
+  const ttl = 60 * 60 * 24; // 24h
+  const departmentId = item.departmentId;
+  const userId = item.userId;
 
-  var key = "l:" + departmentId + ":" + userId;
-  var object = {
+  const key = "l:" + departmentId + ":" + userId;
+  const object = {
     lat: item.location.latitude,
     lon: item.location.longitude,
     type: item.device_type,
@@ -77,9 +77,9 @@ function prepareLocationItem(item: Location, callback: (err: Error, key?: string
     uuid: item.uuid,
     id: item._id,
     userId: item.userId,
-    t: item.modified_unix_date
+    t: item.modified_unix_date,
   };
-  var val = JSON.stringify(object);
+  const val = JSON.stringify(object);
 
   return callback(null, key, val, ttl);
 }
@@ -98,19 +98,19 @@ function expandLocation(item: PackedLocation): Partial<FieldsOfDocument<Location
   return {
     location: {
       latitude: item.lat,
-      longitude: item.lon
+      longitude: item.lon,
     },
     device_type: item.type,
     username: item.username,
     active: item.active,
     uuid: item.uuid,
     userId: item.userId,
-    modified_unix_date: item.t
+    modified_unix_date: item.t,
   };
 }
 
-export function listLocation(client: RedisClient, department: Department, callback: SimpleCallback<Partial<FieldsOfDocument<Location>>[]>) {
-  var departmentId = "";
+export function listLocation(client: RedisClient, department: Department, callback: SimpleCallback<Array<Partial<FieldsOfDocument<Location>>>>) {
+  let departmentId = "";
   if (_.isString(department._id)) {
     departmentId = department._id;
   } else if (_.isObject(department._id)) {
@@ -125,24 +125,25 @@ export function listLocation(client: RedisClient, department: Department, callba
     return callback(new Error(`Invalid departmentId ${departmentId}`));
   }
 
-  var cursor = "0";
-  var match = "l:" + departmentId + ":*";
-  var count = "1000";
+  const cursor = "0";
+  const match = "l:" + departmentId + ":*";
+  const count = "1000";
 
   return client.scan(cursor, "MATCH", match, "COUNT", count, function(err, result) {
     if (err) {
       return callback(err);
     }
     return retrieveItems(client, result[1], function(err, items) {
-      var unpackResults = _.map(items, function(i) {
-        var out: Partial<FieldsOfDocument<Location>> = null;
+      const unpackResults = _.map(items, function(i) {
         try {
-          out = expandLocation(JSON.parse(i));
+          const out: Partial<FieldsOfDocument<Location>>  = expandLocation(JSON.parse(i));
           out.departmentId = departmentId;
-        } catch (err) {}
-        return out;
+          return out;
+        } catch (err) {
+          return null;
+        }
       });
-      var validResults = _.filter(unpackResults, function(i) {
+      const validResults = _.filter(unpackResults, function(i) {
         return _.isObject(i) && _.size(i) > 0;
       });
       return callback(err, validResults);
@@ -166,7 +167,7 @@ export function storeLocation(client: RedisClient, item: Location, callback: Sim
   });
 }
 
-function prepareDebugInfoItem(item: Location, callback: (err: Error, key?: string, val?: string, ttl?: number)=> void) {
+function prepareDebugInfoItem(item: Location, callback: (err: Error, key?: string, val?: string, ttl?: number) => void) {
   if (!_.isString(item.departmentId) || item.departmentId.length === 0) {
     return callback(new Error(`Invalid departmentId: ${item}`));
   }
@@ -179,16 +180,16 @@ function prepareDebugInfoItem(item: Location, callback: (err: Error, key?: strin
     return callback(new Error(`Invalid session ${item}`));
   }
 
-  var ttl = 60 * 60 * 24 * 14; // 14d
-  var departmentId = item.departmentId;
-  var userId = item.userId;
-  var session = item.session;
+  const ttl = 60 * 60 * 24 * 14; // 14d
+  const departmentId = item.departmentId;
+  const userId = item.userId;
+  const session = item.session;
 
-  var key = "info:" + departmentId + ":" + userId + ":" + session;
+  const key = "info:" + departmentId + ":" + userId + ":" + session;
 
-  var props = ["nick", "appVer", "osVer", "ua", "t", "userId", "departmentId"];
-  var object = _.pick(item, props);
-  var val = JSON.stringify(object);
+  const props = ["nick", "appVer", "osVer", "ua", "t", "userId", "departmentId"];
+  const object = _.pick(item, props);
+  const val = JSON.stringify(object);
 
   return callback(null, key, val, ttl);
 }
@@ -219,16 +220,16 @@ export function checkOnline(client: RedisClient, department: Department, callbac
       }
 
       return client.mget(keys, function(err, items) {
-        var unpacked = _.map(items, function(item) {
+        const unpacked = _.map(items, function(item) {
           try {
-            var o = JSON.parse(item);
+            const o = JSON.parse(item);
             o.department = department.department;
             return o;
           } catch (e) {
             return null;
           }
         });
-        var valid = _.filter(unpacked, function(item) {
+        const valid = _.filter(unpacked, function(item) {
           return _.isObject(item);
         });
         return callback(err, valid);
@@ -249,14 +250,14 @@ export function expireItemsMatchingKey(client: RedisClient, keyPattern: string, 
         return false;
       }
 
-      var key = items[index];
+      const key = items[index];
       return client.expire(key, seconds, function(err, result) {
         if (err) {
           return callback(err);
         }
         return processExpire(items, index + 1, callback);
       });
-    };
+    }
 
     return processExpire(keys, 0, callback);
   });
@@ -277,7 +278,7 @@ export function storeAPNInfo(client: RedisClient, item: APNItem, callback: Simpl
     });
   });
 }
-type APNItem = { time: number; departmentId: string; };
+interface APNItem { time: number; departmentId: string; }
 function prepareStoreAPNInfoItem(item: APNItem, callback: (err: Error, key?: string, value?: number, ttl?: number) => void) {
   // INCR apn:deptId:unixTime
 
@@ -289,18 +290,18 @@ function prepareStoreAPNInfoItem(item: APNItem, callback: (err: Error, key?: str
     return callback(new Error(`Invalid departmentId: ${item}`));
   }
 
-  var ttl = 60 * 61; // 61 minutes
-  var departmentId = item.departmentId;
-  var unixTime = moment.unix(item.time).unix();
-  var key = "apn:" + departmentId + ":" + unixTime;
-  var value = 1;
+  const ttl = 60 * 61; // 61 minutes
+  const departmentId = item.departmentId;
+  const unixTime = moment.unix(item.time).unix();
+  const key = "apn:" + departmentId + ":" + unixTime;
+  const value = 1;
   return callback(null, key, value, ttl);
 }
 
 function apnInfoMixin(keys: string[], values: string[], callback: SimpleCallback<Array<{ time: number, value: number }>>) {
-  var grouped: Record<string, number> = {};
+  const grouped: Record<string, number> = {};
   _.each(_.zipObject(keys, values), function(value, key) {
-    var v = parseInt(value);
+    const v = parseInt(value);
     if (!_.isFinite(v)) {
       return;
     }
@@ -309,12 +310,12 @@ function apnInfoMixin(keys: string[], values: string[], callback: SimpleCallback
       return;
     }
 
-    var parts = key.split(":");
+    const parts = key.split(":");
     if (!_.isString(parts[1]) || !_.isFinite(parseInt(parts[2]))) {
       return;
     }
 
-    var t = parseInt(parts[2]);
+    const t = parseInt(parts[2]);
 
     if (!_.has(grouped, t)) {
       grouped[t] = 0;
@@ -322,22 +323,22 @@ function apnInfoMixin(keys: string[], values: string[], callback: SimpleCallback
     grouped[t] = grouped[t] + v;
   });
 
-  var simplified = _.map(grouped, function(value, time) {
+  const simplified = _.map(grouped, function(value, time) {
     return {
       time: parseInt(time),
-      value: value
+      value,
     };
   });
 
-  var sorted = _.sortBy(simplified, "time");
+  const sorted = _.sortBy(simplified, "time");
   return callback(null, sorted);
 }
 
-export function getAPNInfo(client: RedisClient, department: Department, callback: SimpleCallback<Array<{ time: number; value: number;}>>) {
+export function getAPNInfo(client: RedisClient, department: Department, callback: SimpleCallback<Array<{ time: number; value: number; }>>) {
   return client.keys("apn:*", function(err, keys) {
-    var validKeys = _.filter(keys, function(key) {
+    const validKeys = _.filter(keys, function(key) {
       if (department) {
-        var departmentId = "xoxo";
+        let departmentId = "xoxo";
         if (_.isString(department._id)) {
           departmentId = department._id;
         } else if (_.isObject(department._id)) {

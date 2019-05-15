@@ -1,13 +1,13 @@
 import bunyan from "bunyan";
-import * as express from 'express'
+import * as express from 'express';
 
 export function logger(name: string, filePath: string, logToConsole: boolean) {
-  let streams = [];
+  const streams = [];
 
   if (logToConsole) {
     streams.push({
       level: "info" as const,
-      stream: process.stdout
+      stream: process.stdout,
     });
   }
 
@@ -15,12 +15,12 @@ export function logger(name: string, filePath: string, logToConsole: boolean) {
     type: "rotating-file",
     path: filePath,
     period: "1d", // daily rotation
-    count: 10 // keep 3 back copies
+    count: 10, // keep 3 back copies
   });
 
   const logger = bunyan.createLogger({
-    name: name,
-    streams: streams
+    name,
+    streams,
   });
 
   // Reopen file streams on signal
@@ -29,9 +29,9 @@ export function logger(name: string, filePath: string, logToConsole: boolean) {
   });
 
   return logger;
-};
+}
 
-export function middleware (loggerInstance: InstanceType<typeof bunyan>) {
+export function middleware(loggerInstance: InstanceType<typeof bunyan>) {
   return function accessLogMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
     // This doesn't fire the log immediately, but waits until the response is finished
     // This means we have a chance of logging the response code
@@ -44,9 +44,9 @@ export function middleware (loggerInstance: InstanceType<typeof bunyan>) {
         hostname: req.hostname,
         httpVersion: `${req.httpVersionMajor}.${req.httpVersionMinor}`,
         userAgent: req.headers["user-agent"],
-        status: res._header ? res.statusCode : undefined
+        status: res._header ? res.statusCode : undefined,
       }, "access_log");
     });
     next();
   };
-};
+}

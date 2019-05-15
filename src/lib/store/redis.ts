@@ -1,6 +1,6 @@
 import { RedisClient } from "redis";
 import _ from "lodash";
-import debugModule from "debug"
+import debugModule from "debug";
 import { SimpleCallback } from "../../types/types";
 import { Session, Department, User } from "tabletcommand-backend-models";
 
@@ -21,7 +21,9 @@ export function redis(client: RedisClient) {
       let object = null;
       try {
         object = JSON.parse(item);
-      } catch (e) {}
+      } catch (e) {
+        // Parse failed, object is null which is fine.
+      }
 
       return callback(null, object);
     });
@@ -73,7 +75,9 @@ export function redis(client: RedisClient) {
         if (_.isObject(object.d)) {
           department = object.d;
         }
-      } catch (e) {}
+      } catch (e) {
+        // Parse failed, session, user, department are null, and that is ok.
+      }
 
       return callback(null, session, user, department);
     });
@@ -84,7 +88,7 @@ export function redis(client: RedisClient) {
     const item = {
       s: session,
       u: user,
-      d: department
+      d: department,
     };
     const val = JSON.stringify(item);
     const ttl = 60 * 60 * 12; // 12h
@@ -97,16 +101,16 @@ export function redis(client: RedisClient) {
   function expireSessionByToken(token: string, callback: SimpleCallback<number>) {
     const key = `s:${token}`;
     return expireItemByKey(key, callback);
-  };
+  }
 
   return {
-    findDepartmentByApiKey: findDepartmentByApiKey,
-    storeDepartmentByApiKey: storeDepartmentByApiKey,
-    expireDepartmentByApiKey: expireDepartmentByApiKey,
+    findDepartmentByApiKey,
+    storeDepartmentByApiKey,
+    expireDepartmentByApiKey,
 
-    findSessionByToken: findSessionByToken,
-    storeSessionByToken: storeSessionByToken,
-    expireSessionByToken: expireSessionByToken
+    findSessionByToken,
+    storeSessionByToken,
+    expireSessionByToken,
   };
-};
+}
 export default redis;

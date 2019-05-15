@@ -4,31 +4,30 @@ import express = require("express");
 import { SimpleCallback } from "../types/types";
 import { isSuper } from "../lib/helpers";
 export function customSession(Department: DepartmentModel, Session: SessionModel, User: UserModel) {
-  
 
-  var departmentForLogging = function departmentForLogging(department: Department) {
+  const departmentForLogging = function departmentForLogging(department: Department) {
     if (!_.isObject(department)) {
       return {};
     }
 
-    var item = _.pick(_.clone(department), [
-      "_id", "id", "department", "cadBidirectionalEnabled"
+    const item = _.pick(_.clone(department), [
+      "_id", "id", "department", "cadBidirectionalEnabled",
     ]);
     return JSON.parse(JSON.stringify(item)); // Force convert the item to JSON
   };
 
-  var getSession = function getSession(req: express.Request, res: express.Response, callback: SimpleCallback<Session>) {
+  const getSession = function getSession(req: express.Request, res: express.Response, callback: SimpleCallback<Session>) {
     const cookies: unknown = req.cookies;
-    function hasLogin(c: unknown) : c is { "seneca-login": string } {
+    function hasLogin(c: unknown): c is { "seneca-login": string } {
       return _.isObject(c) && _.isString((c as { "seneca-login": string })["seneca-login"]);
     }
     if (!hasLogin(cookies)) {
       return callback(null, null);
     }
 
-    var query = {
+    const query = {
       token: cookies["seneca-login"],
-      active: true
+      active: true,
     };
 
     return Session.findOne(query, function findSessionCallback(err, dbObject) {
@@ -41,19 +40,19 @@ export function customSession(Department: DepartmentModel, Session: SessionModel
     });
   };
 
-  var getUser = function getUser(req: express.Request, res: express.Response, callback: SimpleCallback<User>) {
+  const getUser = function getUser(req: express.Request, res: express.Response, callback: SimpleCallback<User>) {
     if (!_.isObject(req.login)) {
       return callback(null, null);
     }
 
-    var session = req.login;
+    const session = req.login;
     if (!_.isString(session.user)) {
       return callback(null, null);
     }
 
-    var query = {
+    const query = {
       _id: session.user,
-      active: true
+      active: true,
     };
 
     return User.findOne(query, function findUserCallback(err, dbObject) {
@@ -65,17 +64,17 @@ export function customSession(Department: DepartmentModel, Session: SessionModel
     });
   };
 
-  var getDepartmentByUser = function getDepartmentByUser(req: express.Request, res: express.Response, callback: SimpleCallback<Department>) {
+  const getDepartmentByUser = function getDepartmentByUser(req: express.Request, res: express.Response, callback: SimpleCallback<Department>) {
     if (!_.isObject(req.user)) {
       return callback(null, null);
     }
 
-    var user = req.user;
-    var departmentId = user.departmentId;
-    var noUserDepartmentId = (!_.isString(departmentId) || departmentId === "");
-    var isSuperUser = isSuper(user);
+    const user = req.user;
+    let departmentId = user.departmentId;
+    const noUserDepartmentId = (!_.isString(departmentId) || departmentId === "");
+    const isSuperUser = isSuper(user);
 
-    var noQueryDepartmentId = true;
+    let noQueryDepartmentId = true;
     if (noUserDepartmentId && _.isString(req.query.departmentId)) {
       noQueryDepartmentId = false;
       departmentId = req.query.departmentId;
@@ -95,8 +94,8 @@ export function customSession(Department: DepartmentModel, Session: SessionModel
     });
   };
 
-  var getDepartmentByApiKey = function getDepartmentByApiKey(req: express.Request, res: express.Response, callback: SimpleCallback<Department>) {
-    var apiKey = "";
+  const getDepartmentByApiKey = function getDepartmentByApiKey(req: express.Request, res: express.Response, callback: SimpleCallback<Department>) {
+    let apiKey = "";
     if (_.isObject(req.headers) && _.has(req.headers, "apikey")) {
       apiKey = req.headers.apiKey as string;
     } else if (_.isObject(req.headers) && _.has(req.headers, "apikey")) {
@@ -111,9 +110,9 @@ export function customSession(Department: DepartmentModel, Session: SessionModel
       return callback(null, null);
     }
 
-    var query = {
+    const query = {
       apikey: apiKey,
-      active: true
+      active: true,
     };
 
     return Department.findOne(query, function findDepartmentByApiKeyCallback(err, dbObject) {
@@ -148,5 +147,5 @@ export function customSession(Department: DepartmentModel, Session: SessionModel
       });
     });
   };
-};
+}
 export default customSession;

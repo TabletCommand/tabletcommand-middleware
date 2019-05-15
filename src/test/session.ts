@@ -3,26 +3,26 @@ import express from "express";
 
 import mongoose from "mongoose";
 import redisClient from "redis-js";
-import storeModule from "../lib/store"
+import storeModule from "../lib/store";
 import dataModule from './data';
-import sessionModule from '../lib/session'
+import sessionModule from '../lib/session';
+import bluebird from 'bluebird';
 
-mongoose.Promise = require("bluebird");
+mongoose.Promise = bluebird;
 import { connect, BackendModels } from "tabletcommand-backend-models";
 
 import { Mockgoose } from "mockgoose";
 import { db } from '../config';
 
-let mockgoose = new Mockgoose(mongoose);
+const mockgoose = new Mockgoose(mongoose);
 
 describe("Session", function() {
-  let models : BackendModels;
+  let models: BackendModels;
   let store: ReturnType<typeof storeModule> ;
   let data: ReturnType<typeof dataModule>;
   let session: ReturnType<typeof sessionModule>;
   const testApiKey = data.apiKey;
   const testToken = data.token;
-
 
   before(async () => {
     models = (await connect(db)).models;
@@ -47,7 +47,7 @@ describe("Session", function() {
   context("detectApiKey", function() {
     it("resolved from headers 1/2", function(done) {
       const fakeHeaders = {
-        apikey: testApiKey
+        apikey: testApiKey,
       };
       const foundKey = session.detectApiKey(fakeHeaders, null);
       assert.equal(testApiKey, foundKey);
@@ -56,7 +56,7 @@ describe("Session", function() {
 
     it("resolved from headers 2/2", function(done) {
       const fakeHeaders = {
-        apiKey: testApiKey
+        apiKey: testApiKey,
       };
       const foundKey = session.detectApiKey(fakeHeaders, null);
       assert.equal(testApiKey, foundKey);
@@ -65,7 +65,7 @@ describe("Session", function() {
 
     it("resolved from query 1/2", function(done) {
       const fakeQuery = {
-        apikey: testApiKey
+        apikey: testApiKey,
       };
       const foundKey = session.detectApiKey(null, fakeQuery);
       assert.equal(testApiKey, foundKey);
@@ -74,7 +74,7 @@ describe("Session", function() {
 
     it("resolved from query 2/2", function(done) {
       const fakeQuery = {
-        apiKey: testApiKey
+        apiKey: testApiKey,
       };
       const foundKey = session.detectApiKey(null, fakeQuery);
       assert.equal(testApiKey, foundKey);
@@ -84,8 +84,8 @@ describe("Session", function() {
 
   context("authByApiKey", function() {
     it("not resolved if no api key is present", function(done) {
-      let fakeReq = {} as express.Request;;
-      let fakeRes = {} as express.Response;
+      const fakeReq = {} as express.Request;
+      const fakeRes = {} as express.Response;
       session.authByApiKey(fakeReq, fakeRes, function(err, department) {
         assert.isNull(err);
         assert.isNull(department);
@@ -95,12 +95,12 @@ describe("Session", function() {
     });
 
     it("not resolved if invalid api key", function(done) {
-      let fakeReq = {
+      const fakeReq = {
         headers: {
-          apikey: "abc"
-        }
-      } as unknown as express.Request;;
-      let fakeRes = {} as express.Response;
+          apikey: "abc",
+        },
+      } as unknown as express.Request;
+      const fakeRes = {} as express.Response;
       session.authByApiKey(fakeReq, fakeRes, function(err, department) {
         assert.isNull(err);
         assert.isNull(department);
@@ -110,12 +110,12 @@ describe("Session", function() {
     });
 
     it("resolved with correct api key", function(done) {
-      let fakeReq = {
+      const fakeReq = {
         headers: {
-          apikey: testApiKey
-        }
+          apikey: testApiKey,
+        },
       } as unknown as express.Request;
-      let fakeRes = {} as express.Response;
+      const fakeRes = {} as express.Response;
       session.authByApiKey(fakeReq, fakeRes, function(err, department) {
         assert.isNull(err);
         assert.isObject(department);
@@ -130,7 +130,7 @@ describe("Session", function() {
   context("detectCookieSession", function() {
     it("not resolved if no token is present", function(done) {
       const cookies = {};
-      const foundSession = session.detectCookieSession(cookies)
+      const foundSession = session.detectCookieSession(cookies);
       assert.equal(foundSession, "");
       done();
     });
@@ -138,8 +138,8 @@ describe("Session", function() {
     it("resolved if token is present", function(done) {
       const testSession = "helloworld";
       const sessionName = session.sessionCookieName;
-      let cookies = {
-        [sessionName]: testSession
+      const cookies = {
+        [sessionName]: testSession,
       };
       const foundSession = session.detectCookieSession(cookies);
       assert.equal(foundSession, testSession);
@@ -149,8 +149,8 @@ describe("Session", function() {
 
   context("authBySenecaCookie", function() {
     it("not resolved if no session token is present", function(done) {
-      let fakeReq = {} as express.Request;
-      let fakeRes = {} as express.Response;
+      const fakeReq = {} as express.Request;
+      const fakeRes = {} as express.Response;
       session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
         assert.isNull(err);
         assert.isNull(session);
@@ -164,13 +164,13 @@ describe("Session", function() {
     });
 
     it("not resolved if invalid session token", function(done) {
-      let cookies = {
-        [session.sessionCookieName]: "abcd"
+      const cookies = {
+        [session.sessionCookieName]: "abcd",
       };
-      let fakeReq = {
-        cookies: cookies
+      const fakeReq = {
+        cookies,
       } as unknown as express.Request;
-      let fakeRes = {} as express.Response;
+      const fakeRes = {} as express.Response;
       session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
         assert.isNull(err);
         assert.isNull(session);
@@ -184,13 +184,13 @@ describe("Session", function() {
     });
 
     it("resolved with correct session token", function(done) {
-      let cookies = {
-        [session.sessionCookieName]: testToken
+      const cookies = {
+        [session.sessionCookieName]: testToken,
       };
-      let fakeReq = {
-        cookies: cookies
+      const fakeReq = {
+        cookies,
       } as unknown as express.Request;
-      let fakeRes = {} as express.Response;
+      const fakeRes = {} as express.Response;
       session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
         assert.isNull(err);
         assert.isObject(session);

@@ -3,7 +3,7 @@
 import express = require("express");
 
 import { parse } from "url";
-import _  from "lodash";
+import _ from "lodash";
 import os from "os";
 import expressStatsd from "express-statsd";
 const monitorRequest = expressStatsd();
@@ -12,11 +12,11 @@ const monitorRequest = expressStatsd();
 // See https://github.com/uber/express-statsd
 
 export function metricsModule(filterFunction?: (p: string) => void) {
-  var defaultFilter = function defaultFilter(path: string, callback: (p: string) => void) {
+  const defaultFilter = function defaultFilter(path: string, callback: (p: string) => void) {
     const uuidRegex = /[-a-f\d]{36}/i;
     const mongoIdRegex = /[a-f\d]{24}/i;
     if (path.match(uuidRegex) || path.match(mongoIdRegex)) {
-      let parts = path.split(".");
+      const parts = path.split(".");
       const cleanParts = parts.filter(function(part) {
         const isUUID = part.match(uuidRegex);
         const isMongoId = part.match(mongoIdRegex);
@@ -28,13 +28,13 @@ export function metricsModule(filterFunction?: (p: string) => void) {
     return callback(path);
   };
 
-  var statsd = function statsd() {
+  const statsd = function statsd() {
     return function statsdFunc(req: express.Request, res: express.Response, next: express.NextFunction) {
       const hostname = process.env.NODE_STATSD_PREFIX || os.hostname();
       const env = process.env.NODE_ENV || "production";
       let method = req.method || "unknown_method";
       method = method.toLowerCase();
-      let urlName = req.url || "unknown_url";
+      const urlName = req.url || "unknown_url";
       let path = parse(urlName).pathname.toLowerCase();
       path = path.replace(/\//g, " ").trim().replace(/\s/g, ".");
 
@@ -53,9 +53,9 @@ export function metricsModule(filterFunction?: (p: string) => void) {
   };
 
   return {
-    defaultFilter: defaultFilter,
-    statsd: statsd
+    defaultFilter,
+    statsd,
   };
-};
+}
 
 export default metricsModule;

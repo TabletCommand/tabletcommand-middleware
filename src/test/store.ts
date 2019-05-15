@@ -3,23 +3,23 @@ import { assert } from "chai";
 
 import mongoose from "mongoose";
 import redisClient from "redis-js";
-import storeModule from "../lib/store"
+import storeModule from "../lib/store";
 import dataModule from './data';
+import bluebird from 'bluebird';
 
-mongoose.Promise = require("bluebird");
+mongoose.Promise = bluebird;
 import { connect, BackendModels } from "tabletcommand-backend-models";
-import { db } from "../config"
+import { db } from "../config";
 import { Mockgoose } from "mockgoose";
-let mockgoose = new Mockgoose(mongoose);
+const mockgoose = new Mockgoose(mongoose);
 
 describe("Store", function() {
-  let models : BackendModels;
+  let models: BackendModels;
   let store: ReturnType<typeof storeModule> ;
   let data: ReturnType<typeof dataModule>;
 
   const testApiKey = data.apiKey;
   const testToken = data.token;
-
 
   before(async () => {
     models = (await connect(db)).models;

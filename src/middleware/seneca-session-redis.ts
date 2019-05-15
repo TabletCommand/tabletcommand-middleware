@@ -1,5 +1,5 @@
-import storeModule from "../lib/store"
-import sessionModule from "../lib/session"
+import storeModule from "../lib/store";
+import sessionModule from "../lib/session";
 import { DepartmentModel, SessionModel, UserModel } from "tabletcommand-backend-models";
 import { RedisClient } from "redis";
 import express = require("express");
@@ -13,5 +13,5 @@ export function authBySenecaCookieRedis(Department: DepartmentModel, Session: Se
       return next(err);
     });
   };
-};
+}
 export default authBySenecaCookieRedis;

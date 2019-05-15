@@ -34,7 +34,7 @@ export function store(Department: DepartmentModel, Session: SessionModel, User: 
 
   function expireDepartmentByApiKey(apiKey: string, callback: SimpleCallback<number>) {
     return redis.expireDepartmentByApiKey(apiKey, callback);
-  };
+  }
 
   const findSessionByToken = function findSessionByToken(token: string, callback: (err: Error, session?: Session, user?: User, department?: Department, cached?: boolean) => void) {
     let cached = false;
@@ -114,12 +114,12 @@ export function store(Department: DepartmentModel, Session: SessionModel, User: 
   };
 
   return {
-    findDepartmentByApiKey: findDepartmentByApiKey,
-    expireDepartmentByApiKey: expireDepartmentByApiKey,
+    findDepartmentByApiKey,
+    expireDepartmentByApiKey,
 
-    findSessionByToken: findSessionByToken,
-    expireSessionByToken: expireSessionByToken
+    findSessionByToken,
+    expireSessionByToken,
   };
-};
+}
 export default store;
-export type StoreModule = ReturnType<typeof store>
+export type StoreModule = ReturnType<typeof store>;

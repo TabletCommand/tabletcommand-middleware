@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { assert } from "chai";
 
-import { configResolver as configResolverModule } from "../"
+import { configResolver as configResolverModule } from "../";
 const configResolver = configResolverModule();
 
 describe("config-resolver", function() {
@@ -18,7 +18,7 @@ describe("config-resolver", function() {
     it("parses url and returns one random host", function(done) {
       const expectedURLs = [
         "redis://x:password@10.10.11.11:5000",
-        "redis://x:password@10.10.12.12:6000"
+        "redis://x:password@10.10.12.12:6000",
       ];
       const expectedResult = configResolver.redisURL("redis://x:password@10.10.11.11:5000,10.10.12.12:6000");
       assert.isTrue(_.indexOf(expectedURLs, expectedResult) > -1);

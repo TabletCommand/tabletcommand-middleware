@@ -13,6 +13,7 @@
        "outDir": "../build",
        "declarationDir": "../definitions",
        "sourceMap": true,
+       "declarationMap": true
     },
     "exclude": [ 
         //"test/**.ts"

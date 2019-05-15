@@ -7,7 +7,9 @@ function config() {
     let urlParts = null;
     try {
       urlParts = mongodbUri.parse(str);
-    } catch (e) {}
+    } catch (e) {
+      // parse failed and that is ok.
+    }
 
     if (!_.isObject(urlParts)) {
       return str;
@@ -25,7 +27,7 @@ function config() {
   }
 
   return {
-    redisURL
+    redisURL,
   };
-};
+}
 export default config;

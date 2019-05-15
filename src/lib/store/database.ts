@@ -1,9 +1,9 @@
 import { Department, DepartmentModel, SessionModel, Session, UserModel, User } from "tabletcommand-backend-models";
 import { SimpleCallback } from "../../types/types";
-import _ from 'lodash'
-import debugModule from 'debug'
+import _ from 'lodash';
+import debugModule from 'debug';
 
-export function database (Department: DepartmentModel, Session: SessionModel, User: UserModel) {
+export function database(Department: DepartmentModel, Session: SessionModel, User: UserModel) {
   const debug = debugModule("tabletcommand-middleware:store:database");
 
   const fields = {
@@ -23,13 +23,13 @@ export function database (Department: DepartmentModel, Session: SessionModel, Us
       "apikey",
       "active",
       "department",
-      "userContributionEnabled"
-    ]
+      "userContributionEnabled",
+    ],
   } as const;
 
   const findDepartmentByApiKey = function findDepartmentByApiKey(apiKey: string, callback: SimpleCallback<Department>) {
     const query = {
-      apikey: apiKey
+      apikey: apiKey,
     };
 
     debug(`Department.findOne: ${JSON.stringify(query)}.`);
@@ -44,7 +44,7 @@ export function database (Department: DepartmentModel, Session: SessionModel, Us
 
   const findSessionByToken = function findSessionByToken(token: string, callback: SimpleCallback<Session>) {
     const query = {
-      token: token
+      token,
     };
     debug(`Session.findOne: ${JSON.stringify(query)}.`);
     Session.findOne(query, function findSessionByTokenCallback(err, dbItem) {
@@ -58,7 +58,7 @@ export function database (Department: DepartmentModel, Session: SessionModel, Us
 
   const findUserByUserId = function findUserByUserId(userId: string, callback: SimpleCallback<User>) {
     const query = {
-      _id: userId
+      _id: userId,
     };
     debug(`User.findOne: ${JSON.stringify(query)}.`);
     User.findOne(query, function findUserByUserIdCallback(err, dbItem) {
@@ -77,7 +77,7 @@ export function database (Department: DepartmentModel, Session: SessionModel, Us
     }
 
     const query = {
-      _id: departmentId
+      _id: departmentId,
     };
     debug(`Department.findOne: ${JSON.stringify(query)}.`);
     Department.findOne(query, fields.department, function findDepartmentByIdCallback(err, dbItem) {
@@ -90,11 +90,11 @@ export function database (Department: DepartmentModel, Session: SessionModel, Us
   };
 
   return {
-    findDepartmentByApiKey: findDepartmentByApiKey,
+    findDepartmentByApiKey,
 
-    findSessionByToken: findSessionByToken,
-    findUserByUserId: findUserByUserId,
-    findDepartmentById: findDepartmentById
+    findSessionByToken,
+    findUserByUserId,
+    findDepartmentById,
   };
-};
+}
 export default database;

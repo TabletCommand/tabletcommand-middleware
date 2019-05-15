@@ -1,9 +1,9 @@
-import * as _  from "lodash";
+import * as _ from "lodash";
 import * as helpers from "./helpers";
 import express = require("express");
 import { Session, User, Department } from "tabletcommand-backend-models";
 import { StoreModule } from "./store";
-import debugModule from 'debug'
+import debugModule from 'debug';
 import { SimpleCallback } from "../types/types";
 
 export function session(store: StoreModule) {
@@ -14,9 +14,9 @@ export function session(store: StoreModule) {
     function extractApiKey(obj: Record<string, string>) {
       let apiKey = "";
       if (_.has(obj, "apiKey")) {
-        apiKey = obj["apiKey"];
+        apiKey = obj.apiKey;
       } else if (_.has(obj, "apikey")) {
-        apiKey = obj["apikey"];
+        apiKey = obj.apikey;
       }
       return apiKey;
     }
@@ -31,7 +31,7 @@ export function session(store: StoreModule) {
     }
 
     return apiKey;
-  };
+  }
 
   function detectCookieSession(cookies: Record<string, string>) {
     let session = "";
@@ -41,7 +41,7 @@ export function session(store: StoreModule) {
     }
 
     return session;
-  };
+  }
 
   const departmentForLogging = function departmentForLogging(department: Department) {
     if (!_.isObject(department)) {
@@ -49,7 +49,7 @@ export function session(store: StoreModule) {
     }
 
     const item = _.pick(_.clone(department), [
-      "_id", "id", "department", "cadBidirectionalEnabled"
+      "_id", "id", "department", "cadBidirectionalEnabled",
     ]);
     return item;
   };
@@ -68,7 +68,7 @@ export function session(store: StoreModule) {
       }
       return callback(err, department);
     });
-  };
+  }
 
   const authBySenecaCookie = function authBySenecaCookie(req: express.Request, res: express.Response, callback: (err: Error, session: Session, user: User, department: Department) => void) {
     const token = detectCookieSession(req.cookies);
@@ -96,15 +96,15 @@ export function session(store: StoreModule) {
   };
 
   return {
-    detectApiKey: detectApiKey,
-    detectCookieSession: detectCookieSession,
-    sessionCookieName: sessionCookieName,
+    detectApiKey,
+    detectCookieSession,
+    sessionCookieName,
 
-    departmentForLogging: departmentForLogging,
+    departmentForLogging,
 
-    authByApiKey: authByApiKey,
-    authBySenecaCookie: authBySenecaCookie
+    authByApiKey,
+    authBySenecaCookie,
   };
-};
+}
 
 export default session;

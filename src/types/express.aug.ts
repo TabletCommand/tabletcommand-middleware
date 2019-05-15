@@ -14,10 +14,10 @@ declare global  {
             seneca: {
                 login: Session;
                 user: UserInfo;
-            }
+            };
         }
         interface Response {
-            _header: boolean
+            _header: boolean;
         }
     }
 }

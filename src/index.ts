@@ -11,13 +11,12 @@ import * as startModule from "./lib/start";
 import * as loggerModule from "./lib/bunyan-logger";
 import configResolverModule from "./lib/config-resolver";
 
-
 export const session = {
   legacy: customSession,
   signup: signupSession,
   token: tokenSession,
   seneca: senecaSession,
-  apiKey: apiKeySession
+  apiKey: apiKeySession,
 };
 export const metrics = metricsModule;
 export const redis = redisModule;
@@ -26,4 +25,3 @@ export const routesCommon = routesCommonModule;
 export const start = startModule;
 export const logger = loggerModule;
 export const configResolver = configResolverModule;
-

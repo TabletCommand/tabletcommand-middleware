@@ -15,6 +15,6 @@ export function authByApiKeyRedis(Department: DepartmentModel, Session: SessionM
       return next(err);
     });
   };
-};
+}
 
 export default authByApiKeyRedis;
