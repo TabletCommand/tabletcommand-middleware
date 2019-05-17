@@ -5,12 +5,13 @@ import * as helpers from "./helpers";
 import redis, { RedisClient } from "redis";
 import { Department, Location, FieldsOfDocument } from "tabletcommand-backend-models";
 import { SimpleCallback } from "../types/types";
+import { convertToPromise } from "./helpers";
 
 export function client(config: { redis: string; }) {
   return redis.createClient(config.redis);
 }
 
-function keyForDepartment(department: Department, prefix: string, callback: SimpleCallback<string>) {
+function keyForDepartment(department: Department, prefix: string): string {
   let key = prefix + ":";
 
   if (_.isString(department.id)) {
@@ -21,7 +22,7 @@ function keyForDepartment(department: Department, prefix: string, callback: Simp
     key = key + "unknown";
   }
 
-  return callback(null, key);
+  return key;
 }
 
 function retrieveItems(client: RedisClient, keys: string[], callback: SimpleCallback<string[]>) {
@@ -54,13 +55,13 @@ function retrieveItems(client: RedisClient, keys: string[], callback: SimpleCall
   return processKeysList(client, validKeys, 0, [], callback);
 }
 
-function prepareLocationItem(item: Location, callback: (err: Error, key?: string, val?: string, ttl?: number) => void) {
+function prepareLocationItem(item: Location): { key: string, val: string, ttl: number } {
   if (!_.isString(item.departmentId) || item.departmentId.length === 0) {
-    return callback(new Error(`Invalid departmentId ${item}`));
+    throw new Error(`Invalid departmentId ${item}`);
   }
 
   if (!_.isString(item.userId) || item.userId.length === 0) {
-    return callback(new Error(`Invalid userId ${item}`));
+    throw new Error(`Invalid userId ${item}`);
   }
 
   const ttl = 60 * 60 * 24; // 24h
@@ -81,7 +82,7 @@ function prepareLocationItem(item: Location, callback: (err: Error, key?: string
   };
   const val = JSON.stringify(object);
 
-  return callback(null, key, val, ttl);
+  return { key, val, ttl };
 }
 
 interface PackedLocation {
@@ -151,33 +152,29 @@ export function listLocation(client: RedisClient, department: Department, callba
   });
 }
 
-export function storeLocation(client: RedisClient, item: Location, callback: SimpleCallback<"OK">) {
-  return prepareLocationItem(item, function(err, key, val, ttl) {
-    if (err) {
-      return callback(err);
-    }
+export async function storeLocation(client: RedisClient, item: Location, callback: SimpleCallback<"OK">) {
+  const { key, val, ttl } = prepareLocationItem(item);
 
-    return client.set(key, val, "EX", ttl, function(err, result) {
-      if (err) {
-        console.log("Set key Err", err, "key", key, "value", val);
-      }
-      process.stdout.write(".");
-      return callback(err, result);
-    });
-  });
+  try {
+    const result = await convertToPromise<"OK">(cb => client.set(key, val, "EX", ttl, cb));
+    process.stdout.write(".");
+    return result;
+  } catch (err) {
+    console.log("Set key Err", err, "key", key, "value", val);
+  }
 }
 
-function prepareDebugInfoItem(item: Location, callback: (err: Error, key?: string, val?: string, ttl?: number) => void) {
+function prepareDebugInfoItem(item: Location): { key: string, val: string, ttl: number } {
   if (!_.isString(item.departmentId) || item.departmentId.length === 0) {
-    return callback(new Error(`Invalid departmentId: ${item}`));
+    throw new Error(`Invalid departmentId: ${item}`);
   }
 
   if (!_.isString(item.userId) || item.userId.length === 0) {
-    return callback(new Error(`Invalid userId: ${item}`));
+    throw new Error(`Invalid userId: ${item}`);
   }
 
   if (!_.isString(item.session) || item.session.length === 0) {
-    return callback(new Error(`Invalid session ${item}`));
+    throw new Error(`Invalid session ${item}`);
   }
 
   const ttl = 60 * 60 * 24 * 14; // 14d
@@ -191,103 +188,71 @@ function prepareDebugInfoItem(item: Location, callback: (err: Error, key?: strin
   const object = _.pick(item, props);
   const val = JSON.stringify(object);
 
-  return callback(null, key, val, ttl);
+  return { key, val, ttl };
 }
 
 export function storeDebugInfo(client: RedisClient, item: Location, callback: SimpleCallback<"OK">) {
-  return prepareDebugInfoItem(item, function(err, key, val, ttl) {
-    if (err) {
-      return callback(err);
-    }
+  const { key, val, ttl } = prepareDebugInfoItem(item);
 
-    return client.set(key, val, "EX", ttl, function(err, result) {
-      if (err) {
-        console.log("Set key Err", err, "key", key, "value", val);
-      }
-      return callback(err, result);
-    });
-  });
+  try {
+    return convertToPromise<"OK">(cb => client.set(key, val, "EX", ttl, cb));
+  } catch (err) {
+    console.log("Set key Err", err, "key", key, "value", val);
+    throw err;
+  }
 }
 
-export function checkOnline(client: RedisClient, department: Department, callback: SimpleCallback<any[]>) {
-  return keyForDepartment(department, "info", function(err, key) {
-    if (err) {
-      return callback(err);
-    }
-    return client.keys(key + ":*", function(err, keys) {
-      if (_.size(keys) === 0) {
-        return callback(err, []);
-      }
+export async function checkOnline(client: RedisClient, department: Department): Promise<object[]> {
+  const key = keyForDepartment(department, "info");
 
-      return client.mget(keys, function(err, items) {
-        const unpacked = _.map(items, function(item) {
-          try {
-            const o = JSON.parse(item);
-            o.department = department.department;
-            return o;
-          } catch (e) {
-            return null;
-          }
-        });
-        const valid = _.filter(unpacked, function(item) {
-          return _.isObject(item);
-        });
-        return callback(err, valid);
-      });
-    });
+  const keys = await convertToPromise<string[]>(cb => client.keys(key + ":*", cb));
+  if (_.size(keys) === 0) {
+    return [];
+  }
+
+  const items = await convertToPromise<string[]>(cb => client.mget(keys, cb));
+  const unpacked = _.map(items, item => {
+    try {
+      const o = JSON.parse(item);
+      o.department = department.department;
+      return o;
+    } catch (e) {
+      return null;
+    }
   });
+  const valid = _.filter(unpacked, _.isObject);
+  return valid;
 }
 
-export function expireItemsMatchingKey(client: RedisClient, keyPattern: string, seconds: number, callback: SimpleCallback<string[]>) {
-  return client.keys(keyPattern, function(err, keys) {
-    if (_.size(keys) === 0) {
-      return callback(err, []);
-    }
+export async function expireItemsMatchingKey(client: RedisClient, keyPattern: string, seconds: number): Promise<string[]> {
+  const keys = await convertToPromise<string[]>(cb => client.keys(keyPattern, cb));
+  if (_.size(keys) === 0) {
+    return [];
+  }
 
-    function processExpire(items: string[], index: number, callback: SimpleCallback<string[]>): boolean {
-      if (index >= _.size(items)) {
-        callback(null);
-        return false;
-      }
+  for (const key of keys) {
+    await convertToPromise<number>(cb => client.expire(key, seconds, cb));
+  }
 
-      const key = items[index];
-      return client.expire(key, seconds, function(err, result) {
-        if (err) {
-          return callback(err);
-        }
-        return processExpire(items, index + 1, callback);
-      });
-    }
-
-    return processExpire(keys, 0, callback);
-  });
+  await keys;
 }
 
-export function storeAPNInfo(client: RedisClient, item: APNItem, callback: SimpleCallback<number>) {
-  return prepareStoreAPNInfoItem(item, function(err, key, val, ttl) {
-    if (err) {
-      return callback(err, null);
-    }
-    return client.incr(key, function(err, result) {
-      if (err) {
-        return callback(err);
-      }
-      return client.expire(key, ttl, function(err, result) {
-        return callback(err, result);
-      });
-    });
-  });
+export async function storeAPNInfo(client: RedisClient, item: APNItem): Promise<number> {
+  const { key, value, ttl } = prepareStoreAPNInfoItem(item);
+
+  await convertToPromise<number>(cb => client.incr(key, cb));
+  return await convertToPromise<number>(cb => client.expire(key, ttl, cb));
 }
 interface APNItem { time: number; departmentId: string; }
-function prepareStoreAPNInfoItem(item: APNItem, callback: (err: Error, key?: string, value?: number, ttl?: number) => void) {
+function prepareStoreAPNInfoItem(item: APNItem) {
   // INCR apn:deptId:unixTime
 
   if (!_.isFinite(item.time)) {
-    return callback(new Error(`Invalid time: ${item}`));
+    throw new Error(`Invalid time: ${item}`);
   }
 
   if (!_.isString(item.departmentId)) {
-    return callback(new Error(`Invalid departmentId: ${item}`));
+    throw new Error(`Invalid departmentId: ${item}`);
   }
 
   const ttl = 60 * 61; // 61 minutes
@@ -295,10 +260,10 @@ function prepareStoreAPNInfoItem(item: APNItem, callback: (err: Error, key?: str
   const unixTime = moment.unix(item.time).unix();
   const key = "apn:" + departmentId + ":" + unixTime;
   const value = 1;
-  return callback(null, key, value, ttl);
+  return { key, value, ttl };
 }
 
-function apnInfoMixin(keys: string[], values: string[], callback: SimpleCallback<Array<{ time: number, value: number }>>) {
+function apnInfoMixin(keys: string[], values: string[]): Array<{ time: number, value: number }> {
   const grouped: Record<string, number> = {};
   _.each(_.zipObject(keys, values), function(value, key) {
     const v = parseInt(value);
@@ -331,41 +296,35 @@ function apnInfoMixin(keys: string[], values: string[], callback: SimpleCallback
   });
 
   const sorted = _.sortBy(simplified, "time");
-  return callback(null, sorted);
+  return sorted;
 }
 
-export function getAPNInfo(client: RedisClient, department: Department, callback: SimpleCallback<Array<{ time: number; value: number; }>>) {
-  return client.keys("apn:*", function(err, keys) {
-    const validKeys = _.filter(keys, function(key) {
-      if (department) {
-        let departmentId = "xoxo";
-        if (_.isString(department._id)) {
-          departmentId = department._id;
-        } else if (_.isObject(department._id)) {
-          departmentId = department._id.toString();
-        } else if (_.isString(department.id)) {
-          departmentId = department.id;
-        } else if (_.isObject(department.id)) {
-          departmentId = department.id.toString();
-        }
-
-        return key.indexOf(departmentId) !== -1;
+export async function getAPNInfo(client: RedisClient, department: Department): Promise<Array<{ time: number; value: number; }>> {
+  const keys = await convertToPromise<string[]>(cb => client.keys("apn:*", cb));
+  const validKeys = _.filter(keys, function(key) {
+    if (department) {
+      let departmentId = "xoxo";
+      if (_.isString(department._id)) {
+        departmentId = department._id;
+      } else if (_.isObject(department._id)) {
+        departmentId = department._id.toString();
+      } else if (_.isString(department.id)) {
+        departmentId = department.id;
+      } else if (_.isObject(department.id)) {
+        departmentId = department.id.toString();
       }
 
-      return true;
-    });
-
-    if (_.size(validKeys) === 0) {
-      return callback(err, []);
+      return key.indexOf(departmentId) !== -1;
     }
 
-    return client.mget(validKeys, function(err, validValues) {
-      if (err) {
-        return callback(err, []);
-      }
-      return apnInfoMixin(validKeys, validValues, function(err, items) {
-        return callback(err, items);
-      });
-    });
+    return true;
   });
+
+  if (_.size(validKeys) === 0) {
+    return [];
+  }
+
+  const validValues = await convertToPromise<string[]>(cb => client.mget(validKeys, cb));
+
+  return apnInfoMixin(validKeys, validValues);
 }

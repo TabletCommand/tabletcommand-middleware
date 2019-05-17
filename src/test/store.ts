@@ -40,124 +40,95 @@ describe("Store", function() {
   });
 
   context("findDepartmentByApiKey", function() {
-    it("gets department from database", function(done) {
-      return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-        assert.isNull(err);
-        assert.isObject(item);
-        assert.isFalse(cached);
-        return done();
-      });
+    it("gets department from database", async function(done) {
+      const { department: item, cached } = await store.findDepartmentByApiKey(testApiKey);
+
+      assert.isObject(item);
+      assert.isFalse(cached);
     });
 
-    it("gets department from cache", function(done) {
-      return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-        assert.isNull(err);
-        assert.isFalse(cached, "First call, it is not cached");
+    it("gets department from cache", async function() {
+      const { cached } = await store.findDepartmentByApiKey(testApiKey);
+      assert.isFalse(cached, "First call, it is not cached");
 
-        return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-          assert.isNull(err);
-          assert.isObject(item);
-          assert.isTrue(cached, "Second call, it is cached");
-          return done();
-        });
-      });
+      const { department, cached: cached2 } = await store.findDepartmentByApiKey(testApiKey);
+
+      assert.isObject(department);
+      assert.isTrue(cached2, "Second call, it is cached");
     });
 
-    it("gets department from database, when redis is expired", function(done) {
+    it("gets department from database, when redis is expired", async function(done) {
       // Cache the item to redis
-      return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-        assert.isNull(err);
+      {
+        const { cached } = await store.findDepartmentByApiKey(testApiKey);
         assert.isFalse(cached, "First call, it is not cached");
+      }
+      {
+        const { department: item, cached } = await store.findDepartmentByApiKey(testApiKey);
 
+        assert.isObject(item);
+        assert.isTrue(cached, "Second call, it is cached");
+      }
+      await store.expireDepartmentByApiKey(testApiKey);
+      {
+        const { department: item, cached } = await store.findDepartmentByApiKey(testApiKey);
+        assert.isFalse(cached, "Call after expired, it is not cached");
+      }
+      {
         // Item is cached to redis
-        return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-          assert.isNull(err);
-          assert.isObject(item);
-          assert.isTrue(cached, "Second call, it is cached");
-
-          return store.expireDepartmentByApiKey(testApiKey, function(err, item) {
-            assert.isNull(err);
-
-            return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-              assert.isNull(err);
-              assert.isFalse(cached, "Call after expired, it is not cached");
-
-              // Item is cached to redis
-              return store.findDepartmentByApiKey(testApiKey, function(err, item, cached) {
-                assert.isNull(err);
-                assert.isObject(item);
-                assert.isTrue(cached, "Call again, it is cached");
-
-                return done();
-              });
-            });
-          });
-        });
-      });
+        const { department: item, cached } = await store.findDepartmentByApiKey(testApiKey);
+        assert.isObject(item);
+        assert.isTrue(cached, "Call again, it is cached");
+      }
     });
   });
 
   context("findSessionByToken", function() {
-    it("gets session from database", function(done) {
-      return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
-        assert.isNull(err);
+    it("gets session from database", async function() {
+      const { session, user, department, cached } = await store.findSessionByToken(testToken);
+      assert.isObject(session);
+      assert.isObject(user);
+      assert.isObject(department);
+      assert.isFalse(cached, "Object should not be cached");
+    });
+
+    it("gets session from redis", async function() {
+      const { cached } = await store.findSessionByToken(testToken);
+      assert.isFalse(cached);
+
+      const { session, user, department, cached: cached2 } = await store.findSessionByToken(testToken);
+      assert.isObject(session);
+      assert.isObject(user);
+      assert.isObject(department);
+      assert.isTrue(cached2, "Object should be cached");
+    });
+
+    it("gets session from database, when redis is expired", async function() {
+      // Cache the item to redis
+      {
+        const { cached } = await store.findSessionByToken(testToken);
+        assert.isFalse(cached);
+      }
+      {
+        const { session, user, department, cached } = await store.findSessionByToken(testToken);
         assert.isObject(session);
         assert.isObject(user);
         assert.isObject(department);
-        assert.isFalse(cached, "Object should not be cached");
-        return done();
-      });
-    });
-
-    it("gets session from redis", function(done) {
-      return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
-        assert.isNull(err);
-        assert.isFalse(cached);
-
-        return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
-          assert.isNull(err);
+        assert.isTrue(cached, "Object should be cached");
+      }
+      await store.expireSessionByToken(testToken);
+      {
+          // Testing after item is expired
+          const { cached } = await store.findSessionByToken(testToken);
+          assert.isFalse(cached);
+      }
+      {
+          const { session, user, department, cached } = await store.findSessionByToken(testToken);
           assert.isObject(session);
           assert.isObject(user);
           assert.isObject(department);
           assert.isTrue(cached, "Object should be cached");
-          return done();
-        });
-      });
-    });
-
-    it("gets session from database, when redis is expired", function(done) {
-      // Cache the item to redis
-      return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
-        assert.isNull(err);
-        assert.isFalse(cached);
-
-        return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
-          assert.isNull(err);
-          assert.isObject(session);
-          assert.isObject(user);
-          assert.isObject(department);
-          assert.isTrue(cached, "Object should be cached");
-
-          return store.expireSessionByToken(testToken, function(err, result) {
-            assert.isNull(err);
-
-            // Testing after item is expired
-            return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
-              assert.isNull(err);
-              assert.isFalse(cached);
-
-              return store.findSessionByToken(testToken, function(err, session, user, department, cached) {
-                assert.isNull(err);
-                assert.isObject(session);
-                assert.isObject(user);
-                assert.isObject(department);
-                assert.isTrue(cached, "Object should be cached");
-                return done();
-              });
-            });
-          });
-        });
-      });
+      }
     });
   });
 });

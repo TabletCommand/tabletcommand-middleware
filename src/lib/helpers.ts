@@ -7,6 +7,7 @@ import { Response, Request } from 'express';
 import { User, Session, Department } from "tabletcommand-backend-models";
 import express = require("express");
 import { UserInfo } from "../middleware/token-session";
+import { SimpleCallback } from "../types/types";
 
 export function calculateOffsetFromTime(time: number) {
   const serverUnix = new Date().valueOf() / 1000;
@@ -266,7 +267,7 @@ export function cleanupUser(user: UserInfo) {
   return _.omit(user, stripSessionFields as any);
 }
 
-export function resolveUser(args: { req$: express.Request, user: UserInfo }, callback: (err: Error, user?: UserInfo, session?: Session) => void): void {
+export function resolveUser(args: { req$: express.Request, user: UserInfo }): { user: UserInfo, session: Session } {
   const hasSeneca = _.isObject(args) &&
     _.isObject(args.req$) &&
     _.isObject(args.req$.seneca);
@@ -280,7 +281,7 @@ export function resolveUser(args: { req$: express.Request, user: UserInfo }, cal
     }
 
     debug("No hasSenecaUser and no hasArgsUser");
-    return callback(null, null);
+    return null;
   }
 
   let resolvedUser = null;
@@ -305,11 +306,11 @@ export function resolveUser(args: { req$: express.Request, user: UserInfo }, cal
 
   if (_.isNull(resolvedUser) || userInactive || sessionInactive) {
     debug("User or session not active for", resolvedUser.nick, session.id);
-    return callback(null, null, null);
+    return null;
   }
 
   const user = cleanupUser(resolvedUser);
-  return callback(null, user, session);
+  return { user, session };
 }
 
 interface ResolveLoginArg { req$: { seneca: { login: UserInfo; }; }; }
@@ -327,7 +328,7 @@ export function resolveLogin(args: ResolveLoginArg): UserInfo {
   return login;
 }
 
-const getClosedOrDate = function getClosedOrDate() {
+function getClosedOrDate() {
   const nowForClosedDateUnixDate = moment().valueOf() / 1000.0;
   const closedOr = [{
     closed_unix_date: 0,
@@ -338,7 +339,7 @@ const getClosedOrDate = function getClosedOrDate() {
   }];
 
   return closedOr;
-};
+}
 
 export function extractInfoFromDevice(device: { token?: string; env: any; ver: any; ua: any; time: any; bundleIdentifier?: string; silentEnabled?: boolean; richEnabled?: boolean; }) {
   const maxDaysSinceEvent = 120;
@@ -505,3 +506,13 @@ const configureMomentOpts = function configureMomentOpts() {
     },
   });
 };
+
+export function convertToPromise<T = never>(fn: (cb: SimpleCallback<T>) => void) {
+  return new Promise<T | null>((resolve, reject) => fn((err, result) => {
+      if (err) {
+          reject(err);
+      } else {
+          resolve(result);
+      }
+  }));
+}

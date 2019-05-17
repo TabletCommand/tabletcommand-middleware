@@ -27,67 +27,63 @@ export function database(Department: DepartmentModel, Session: SessionModel, Use
     ],
   } as const;
 
-  const findDepartmentByApiKey = function findDepartmentByApiKey(apiKey: string, callback: SimpleCallback<Department>) {
+  async function findDepartmentByApiKey(apiKey: string): Promise<Department> {
     const query = {
       apikey: apiKey,
     };
 
     debug(`Department.findOne: ${JSON.stringify(query)}.`);
-    Department.findOne(query, fields.department, function findOneCallback(err, dbItem) {
-      let item = null;
-      if (_.isObject(dbItem)) {
-        item = JSON.parse(JSON.stringify(dbItem.toJSON()));
-      }
-      return callback(err, item);
-    });
-  };
+    const dbItem = await Department.findOne(query, fields.department);
+    let item: Department | null = null;
+    if (_.isObject(dbItem)) {
+      item = JSON.parse(JSON.stringify(dbItem.toJSON())) as Department;
+    }
+    return item;
+  }
 
-  const findSessionByToken = function findSessionByToken(token: string, callback: SimpleCallback<Session>) {
+  async function findSessionByToken(token: string): Promise<Session> {
     const query = {
       token,
     };
     debug(`Session.findOne: ${JSON.stringify(query)}.`);
-    Session.findOne(query, function findSessionByTokenCallback(err, dbItem) {
-      let item = null;
-      if (_.isObject(dbItem)) {
-        item = JSON.parse(JSON.stringify(dbItem.toJSON()));
-      }
-      return callback(err, item);
-    });
-  };
+    const dbItem = await Session.findOne(query);
+    let item: Session | null = null;
+    if (_.isObject(dbItem)) {
+      item = JSON.parse(JSON.stringify(dbItem.toJSON()));
+    }
+    return item;
+  }
 
-  const findUserByUserId = function findUserByUserId(userId: string, callback: SimpleCallback<User>) {
+  async function findUserByUserId(userId: string): Promise<User> {
     const query = {
       _id: userId,
     };
     debug(`User.findOne: ${JSON.stringify(query)}.`);
-    User.findOne(query, function findUserByUserIdCallback(err, dbItem) {
-      let item = null;
-      if (_.isObject(dbItem)) {
-        item = JSON.parse(JSON.stringify(dbItem.toJSON()));
-      }
-      return callback(err, item);
-    });
-  };
+    const dbItem = await User.findOne(query);
+    let item = null;
+    if (_.isObject(dbItem)) {
+      item = JSON.parse(JSON.stringify(dbItem.toJSON()));
+    }
+    return item;
+  }
 
-  const findDepartmentById = function findDepartmentById(departmentId: string, callback: SimpleCallback<Department>) {
+  async function findDepartmentById(departmentId: string): Promise<Department> {
     // super admins do not have a departmentId
     if (!_.isString(departmentId) || departmentId === "") {
-      return callback(null, null);
+      return null;
     }
 
     const query = {
       _id: departmentId,
     };
     debug(`Department.findOne: ${JSON.stringify(query)}.`);
-    Department.findOne(query, fields.department, function findDepartmentByIdCallback(err, dbItem) {
-      let item = null;
-      if (_.isObject(dbItem)) {
-        item = JSON.parse(JSON.stringify(dbItem.toJSON()));
-      }
-      return callback(err, item);
-    });
-  };
+    const dbItem = await Department.findOne(query, fields.department);
+    let item: Department | null = null;
+    if (_.isObject(dbItem)) {
+      item = JSON.parse(JSON.stringify(dbItem.toJSON())) as Department;
+    }
+    return item;
+  }
 
   return {
     findDepartmentByApiKey,

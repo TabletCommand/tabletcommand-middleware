@@ -10,10 +10,8 @@ export function authByApiKeyRedis(Department: DepartmentModel, Session: SessionM
   const store = storeModule(Department, Session, User, redisClient);
   const session = sessionModule(store);
 
-  return function authByApiKeyRedisMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
-    return session.authByApiKey(req, res, function authByApiKeyCallback(err) {
-      return next(err);
-    });
+  return async function authByApiKeyRedisMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
+     session.authByApiKey(req, res).catch(next);
   };
 }
 

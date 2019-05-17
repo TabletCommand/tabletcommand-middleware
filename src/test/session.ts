@@ -83,47 +83,39 @@ describe("Session", function() {
   });
 
   context("authByApiKey", function() {
-    it("not resolved if no api key is present", function(done) {
+    it("not resolved if no api key is present", async function() {
       const fakeReq = {} as express.Request;
       const fakeRes = {} as express.Response;
-      session.authByApiKey(fakeReq, fakeRes, function(err, department) {
-        assert.isNull(err);
-        assert.isNull(department);
-        assert.isNotObject(fakeReq.department);
-        done();
-      });
+      const department = await session.authByApiKey(fakeReq, fakeRes);
+      assert.isNull(department);
+      assert.isNotObject(fakeReq.department);
     });
 
-    it("not resolved if invalid api key", function(done) {
+    it("not resolved if invalid api key", async function() {
       const fakeReq = {
         headers: {
           apikey: "abc",
         },
       } as unknown as express.Request;
       const fakeRes = {} as express.Response;
-      session.authByApiKey(fakeReq, fakeRes, function(err, department) {
-        assert.isNull(err);
-        assert.isNull(department);
-        assert.isNotObject(fakeReq.department);
-        done();
-      });
+      const department = await session.authByApiKey(fakeReq, fakeRes);
+
+      assert.isNull(department);
+      assert.isNotObject(fakeReq.department);
     });
 
-    it("resolved with correct api key", function(done) {
+    it("resolved with correct api key", async function() {
       const fakeReq = {
         headers: {
           apikey: testApiKey,
         },
       } as unknown as express.Request;
       const fakeRes = {} as express.Response;
-      session.authByApiKey(fakeReq, fakeRes, function(err, department) {
-        assert.isNull(err);
-        assert.isObject(department);
-        assert.isObject(fakeReq.department);
-        assert.deepEqual(department, fakeReq.department);
-        assert.equal(data.department.apikey, department.apikey);
-        done();
-      });
+      const department = await session.authByApiKey(fakeReq, fakeRes);
+      assert.isObject(department);
+      assert.isObject(fakeReq.department);
+      assert.deepEqual(department, fakeReq.department);
+      assert.equal(data.department.apikey, department.apikey);
     });
   });
 
