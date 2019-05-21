@@ -25,7 +25,7 @@ export function redis(client: RedisClient) {
     return object;
   }
 
-  function storeDepartmentByApiKey(apiKey: string, item: Department): Promise<"OK"> {
+  function storeDepartmentByApiKey(apiKey: string, item: Department | null): Promise<"OK"> {
     const key = `api:${apiKey}`;
     const val = JSON.stringify(item);
     const ttl = 60 * 60 * 24; // 24h
@@ -70,7 +70,7 @@ export function redis(client: RedisClient) {
     return { session, user, department };
   }
 
-  function storeSessionByToken(token: string, session: Session, user: User, department: Department): Promise<"OK"> {
+  function storeSessionByToken(token: string, session: Session | null, user: User | null, department: Department | null): Promise<"OK"> {
     const key = `s:${token}`;
     const item = {
       s: session,

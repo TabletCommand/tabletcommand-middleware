@@ -25,34 +25,23 @@ function keyForDepartment(department: Department, prefix: string): string {
   return key;
 }
 
-function retrieveItems(client: RedisClient, keys: string[], callback: SimpleCallback<string[]>) {
+async function retrieveItems(client: RedisClient, keys: string[]): Promise<string[]> {
   if (!_.isArray(keys) || _.size(keys) === 0) {
-    return callback(null, []);
+    return [];
   }
 
   const validKeys = _.filter(keys, function(k) {
     return _.isString(k) && k.length > 0;
   });
 
-  function processKeysList(client: RedisClient, items: string[], index: number, resolved: string[], callback: SimpleCallback<string[]>): boolean {
-    if (index >= _.size(items)) {
-      callback(null, resolved);
+  const resolved: string[] = [];
+  for (const key of validKeys) {
+    const object = await convertToPromise<string>(cb => client.get(key, cb));
+    if (!_.isNull(object) && !_.isUndefined(object)) {
+      resolved.push(object);
     }
-
-    const key = items[index];
-    return client.get(key, function(err, object) {
-      if (err) {
-        return callback(err, []);
-      }
-      const resolvedX = _.clone(resolved);
-      if (!_.isNull(object) && !_.isUndefined(object)) {
-        resolvedX.push(object);
-      }
-      return processKeysList(client, items, index + 1, resolvedX, callback);
-    });
   }
-
-  return processKeysList(client, validKeys, 0, [], callback);
+  return resolved;
 }
 
 function prepareLocationItem(item: Location): { key: string, val: string, ttl: number } {
@@ -110,7 +99,7 @@ function expandLocation(item: PackedLocation): Partial<FieldsOfDocument<Location
   };
 }
 
-export function listLocation(client: RedisClient, department: Department, callback: SimpleCallback<Array<Partial<FieldsOfDocument<Location>>>>) {
+export async function listLocation(client: RedisClient, department: Department): Promise<Array<Partial<FieldsOfDocument<Location>>>> {
   let departmentId = "";
   if (_.isString(department._id)) {
     departmentId = department._id;
@@ -123,36 +112,32 @@ export function listLocation(client: RedisClient, department: Department, callba
   }
 
   if (!_.isString(departmentId) || departmentId.length === 0) {
-    return callback(new Error(`Invalid departmentId ${departmentId}`));
+    throw new Error(`Invalid departmentId ${departmentId}`);
   }
 
   const cursor = "0";
   const match = "l:" + departmentId + ":*";
   const count = "1000";
 
-  return client.scan(cursor, "MATCH", match, "COUNT", count, function(err, result) {
-    if (err) {
-      return callback(err);
+  const result = await convertToPromise<[string, string[]]>(cb => client.scan(cursor, "MATCH", match, "COUNT", count, cb));
+
+  const items = await retrieveItems(client, result[1]);
+  const unpackResults = _.map(items, function(i) {
+    try {
+      const out: Partial<FieldsOfDocument<Location>>  = expandLocation(JSON.parse(i));
+      out.departmentId = departmentId;
+      return out;
+    } catch (err) {
+      return null;
     }
-    return retrieveItems(client, result[1], function(err, items) {
-      const unpackResults = _.map(items, function(i) {
-        try {
-          const out: Partial<FieldsOfDocument<Location>>  = expandLocation(JSON.parse(i));
-          out.departmentId = departmentId;
-          return out;
-        } catch (err) {
-          return null;
-        }
-      });
-      const validResults = _.filter(unpackResults, function(i) {
-        return _.isObject(i) && _.size(i) > 0;
-      });
-      return callback(err, validResults);
-    });
   });
+  const validResults = _.filter(unpackResults, function(i): i is Exclude<typeof i, null> {
+    return _.isObject(i) && _.size(i) > 0;
+  });
+  return validResults;
 }
 
-export async function storeLocation(client: RedisClient, item: Location, callback: SimpleCallback<"OK">) {
+export async function storeLocation(client: RedisClient, item: Location): Promise<"OK" | null> {
   const { key, val, ttl } = prepareLocationItem(item);
 
   try {
@@ -161,6 +146,7 @@ export async function storeLocation(client: RedisClient, item: Location, callbac
     return result;
   } catch (err) {
     console.log("Set key Err", err, "key", key, "value", val);
+    return null;
   }
 }
 
@@ -191,7 +177,7 @@ function prepareDebugInfoItem(item: Location): { key: string, val: string, ttl: 
   return { key, val, ttl };
 }
 
-export function storeDebugInfo(client: RedisClient, item: Location, callback: SimpleCallback<"OK">) {
+export function storeDebugInfo(client: RedisClient, item: Location) {
   const { key, val, ttl } = prepareDebugInfoItem(item);
 
   try {
@@ -206,7 +192,7 @@ export async function checkOnline(client: RedisClient, department: Department): 
   const key = keyForDepartment(department, "info");
 
   const keys = await convertToPromise<string[]>(cb => client.keys(key + ":*", cb));
-  if (_.size(keys) === 0) {
+  if (!keys || _.size(keys) === 0) {
     return [];
   }
 
@@ -226,7 +212,7 @@ export async function checkOnline(client: RedisClient, department: Department): 
 
 export async function expireItemsMatchingKey(client: RedisClient, keyPattern: string, seconds: number): Promise<string[]> {
   const keys = await convertToPromise<string[]>(cb => client.keys(keyPattern, cb));
-  if (_.size(keys) === 0) {
+  if (!keys || _.size(keys) === 0) {
     return [];
   }
 
@@ -234,10 +220,10 @@ export async function expireItemsMatchingKey(client: RedisClient, keyPattern: st
     await convertToPromise<number>(cb => client.expire(key, seconds, cb));
   }
 
-  await keys;
+  return keys;
 }
 
-export async function storeAPNInfo(client: RedisClient, item: APNItem): Promise<number> {
+export async function storeAPNInfo(client: RedisClient, item: APNItem): Promise<number | null> {
   const { key, value, ttl } = prepareStoreAPNInfoItem(item);
 
   await convertToPromise<number>(cb => client.incr(key, cb));

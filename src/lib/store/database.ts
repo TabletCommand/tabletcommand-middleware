@@ -27,7 +27,7 @@ export function database(Department: DepartmentModel, Session: SessionModel, Use
     ],
   } as const;
 
-  async function findDepartmentByApiKey(apiKey: string): Promise<Department> {
+  async function findDepartmentByApiKey(apiKey: string): Promise<Department | null> {
     const query = {
       apikey: apiKey,
     };
@@ -41,7 +41,7 @@ export function database(Department: DepartmentModel, Session: SessionModel, Use
     return item;
   }
 
-  async function findSessionByToken(token: string): Promise<Session> {
+  async function findSessionByToken(token: string): Promise<Session | null> {
     const query = {
       token,
     };
@@ -67,7 +67,7 @@ export function database(Department: DepartmentModel, Session: SessionModel, Use
     return item;
   }
 
-  async function findDepartmentById(departmentId: string): Promise<Department> {
+  async function findDepartmentById(departmentId: string): Promise<Department | null> {
     // super admins do not have a departmentId
     if (!_.isString(departmentId) || departmentId === "") {
       return null;

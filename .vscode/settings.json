@@ -1,0 +1,15 @@
+{
+    "files.exclude": {
+        "definitions": true,
+    },
+    "cSpell.words": [
+        "devops",
+        "dmon",
+        "helloworld",
+        "mget",
+        "signup",
+        "stacktraces",
+        "tyrion",
+        "unixtime"
+    ]
+}

@@ -175,9 +175,9 @@ export function joinParentChildCollections<
   return parents;
 }
 type BooleanLike = boolean | string | number;
-export function itemIsTrue(item: Record<string, string[] | string>, key: string): boolean;
-export function itemIsTrue<K extends PropertyKey>(item: Partial<Record<K, BooleanLike>> | null, key: K): boolean;
-export function itemIsTrue(item: Record<string, BooleanLike | string | string[]> | null, key: string) {
+export function itemIsTrue(item: Record<string, string[] | string | null | undefined> | null, key: string): boolean;
+export function itemIsTrue<K extends PropertyKey>(item: Partial<Record<K, BooleanLike | null>> | null, key: K): boolean;
+export function itemIsTrue(item: Partial<Record<string, BooleanLike | string | string[] | null>> | null, key: string) {
   if (_.isUndefined(item) || _.isNull(item)) {
     return false;
   }
@@ -262,12 +262,12 @@ function stripSessionFields(value: any, key: string) {
   return filterSeneca || skipFields;
 }
 
-export function cleanupUser(user: UserInfo) {
+export function cleanupUser(user: UserInfo): UserInfo {
   // Usage assertions, the definitions don't seem to know about this overload.
   return _.omit(user, stripSessionFields as any);
 }
 
-export function resolveUser(args: { req$: express.Request, user: UserInfo }): { user: UserInfo, session: Session } {
+export function resolveUser(args: { req$: express.Request, user: UserInfo }): { user: UserInfo, session: Session | null } | null {
   const hasSeneca = _.isObject(args) &&
     _.isObject(args.req$) &&
     _.isObject(args.req$.seneca);
@@ -293,7 +293,7 @@ export function resolveUser(args: { req$: express.Request, user: UserInfo }): { 
     resolvedUser = args.req$.user;
   }
 
-  let session: Session;
+  let session: Session | null = null;
   if (hasSeneca && _.isObject(args.req$.seneca.login)) {
     session = args.req$.seneca.login;
   } else if (_.isObject(args.req$.session)) {
@@ -305,7 +305,7 @@ export function resolveUser(args: { req$: express.Request, user: UserInfo }): { 
   // sessionInactive = false; // TODO: remove this once all the users are active
 
   if (_.isNull(resolvedUser) || userInactive || sessionInactive) {
-    debug("User or session not active for", resolvedUser.nick, session.id);
+    debug("User or session not active for:", resolvedUser && resolvedUser.nick, session && session.id);
     return null;
   }
 
@@ -314,7 +314,7 @@ export function resolveUser(args: { req$: express.Request, user: UserInfo }): { 
 }
 
 interface ResolveLoginArg { req$: { seneca: { login: UserInfo; }; }; }
-export function resolveLogin(args: ResolveLoginArg): UserInfo {
+export function resolveLogin(args: ResolveLoginArg): UserInfo | null {
   if (!_.isObject(args) ||
     !_.isObject(args.req$) ||
     !_.isObject(args.req$.seneca) ||
@@ -413,7 +413,7 @@ export function headersToDevice(token: string, headers: express.Request['headers
     appVersion = headers["x-tc-app-version"] as string;
   }
 
-  let userAgent = "";
+  let userAgent: string | undefined = "";
   if (_.has(headers, "user-agent")) {
     userAgent = headers["user-agent"];
   }
@@ -507,12 +507,12 @@ const configureMomentOpts = function configureMomentOpts() {
   });
 };
 
-export function convertToPromise<T = never>(fn: (cb: SimpleCallback<T>) => void) {
-  return new Promise<T | null>((resolve, reject) => fn((err, result) => {
+export function convertToPromise<T = never>(fn: (cb: (err: Error | null, result: T | null | undefined) => void) => void) {
+  return new Promise<T>((resolve, reject) => fn((err, result) => {
       if (err) {
           reject(err);
       } else {
-          resolve(result);
+          resolve(result!);
       }
   }));
 }

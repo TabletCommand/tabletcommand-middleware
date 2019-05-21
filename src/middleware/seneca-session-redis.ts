@@ -8,10 +8,13 @@ export function authBySenecaCookieRedis(Department: DepartmentModel, Session: Se
 
   const store = storeModule(Department, Session, User, redisClient);
   const session = sessionModule(store);
-  return function authBySenecaCookieRedisMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
-    return session.authBySenecaCookie(req, res, function authBySenecaCookieCallback(err) {
-      return next(err);
-    });
+  return async function authBySenecaCookieRedisMiddleware(req: express.Request, res: express.Response, next: express.NextFunction) {
+    try {
+      await session.authBySenecaCookie(req, res);
+      next(null);
+    } catch (err) {
+      next(err);
+    }
   };
 }
 export default authBySenecaCookieRedis;

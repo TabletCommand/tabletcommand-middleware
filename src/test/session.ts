@@ -21,13 +21,16 @@ describe("Session", function() {
   let store: ReturnType<typeof storeModule> ;
   let data: ReturnType<typeof dataModule>;
   let session: ReturnType<typeof sessionModule>;
-  const testApiKey = data.apiKey;
-  const testToken = data.token;
+
+  let testApiKey: string;
+  let testToken: string;
 
   before(async () => {
     models = (await connect(db)).models;
     store = storeModule(models.Department, models.Session, models.User, redisClient);
     data = dataModule(mockgoose, mongoose, models, redisClient);
+    testApiKey = data.apiKey;
+    testToken = data.token;
     session = sessionModule(store);
   });
 
@@ -115,7 +118,7 @@ describe("Session", function() {
       assert.isObject(department);
       assert.isObject(fakeReq.department);
       assert.deepEqual(department, fakeReq.department);
-      assert.equal(data.department.apikey, department.apikey);
+      assert.equal(data.department.apikey, department!.apikey);
     });
   });
 
@@ -140,22 +143,19 @@ describe("Session", function() {
   });
 
   context("authBySenecaCookie", function() {
-    it("not resolved if no session token is present", function(done) {
+    it("not resolved if no session token is present", async function() {
       const fakeReq = {} as express.Request;
       const fakeRes = {} as express.Response;
-      session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
-        assert.isNull(err);
-        assert.isNull(session);
-        assert.isNull(user);
-        assert.isNull(department);
-        assert.isNotObject(fakeReq.session);
-        assert.isNotObject(fakeReq.user);
-        assert.isNotObject(fakeReq.department);
-        done();
-      });
+      const { session: sess, user, department } = await session.authBySenecaCookie(fakeReq, fakeRes)!;
+      assert.isNull(sess);
+      assert.isNull(user);
+      assert.isNull(department);
+      assert.isNotObject(fakeReq.session);
+      assert.isNotObject(fakeReq.user);
+      assert.isNotObject(fakeReq.department);
     });
 
-    it("not resolved if invalid session token", function(done) {
+    it("not resolved if invalid session token", async function() {
       const cookies = {
         [session.sessionCookieName]: "abcd",
       };
@@ -163,19 +163,16 @@ describe("Session", function() {
         cookies,
       } as unknown as express.Request;
       const fakeRes = {} as express.Response;
-      session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
-        assert.isNull(err);
-        assert.isNull(session);
-        assert.isNull(user);
-        assert.isNull(department);
-        assert.isNotObject(fakeReq.session);
-        assert.isNotObject(fakeReq.user);
-        assert.isNotObject(fakeReq.department);
-        done();
-      });
+      const { session: sess, user, department } = await session.authBySenecaCookie(fakeReq, fakeRes);
+      assert.isNull(sess);
+      assert.isNull(user);
+      assert.isNull(department);
+      assert.isNotObject(fakeReq.session);
+      assert.isNotObject(fakeReq.user);
+      assert.isNotObject(fakeReq.department);
     });
 
-    it("resolved with correct session token", function(done) {
+    it("resolved with correct session token", async function() {
       const cookies = {
         [session.sessionCookieName]: testToken,
       };
@@ -183,20 +180,18 @@ describe("Session", function() {
         cookies,
       } as unknown as express.Request;
       const fakeRes = {} as express.Response;
-      session.authBySenecaCookie(fakeReq, fakeRes, function(err, session, user, department) {
-        assert.isNull(err);
-        assert.isObject(session);
-        assert.isObject(user);
-        assert.isObject(department);
-        assert.isObject(fakeReq.session);
-        assert.isObject((fakeReq as any).login);
-        assert.isObject(fakeReq.user);
-        assert.isObject(fakeReq.department);
-        assert.equal(data.session.token, testToken);
-        assert.equal(data.user._id, user._id);
-        assert.equal(data.department._id, department._id);
-        done();
-      });
+      const { session: sess, user, department } = await session.authBySenecaCookie(fakeReq, fakeRes);
+
+      assert.isObject(sess);
+      assert.isObject(user);
+      assert.isObject(department);
+      assert.isObject(fakeReq.session);
+      assert.isObject((fakeReq as any).login);
+      assert.isObject(fakeReq.user);
+      assert.isObject(fakeReq.department);
+      assert.equal(data.session.token, testToken);
+      assert.equal(data.user._id, user!._id);
+      assert.equal(data.department._id, department!._id);
     });
   });
 });

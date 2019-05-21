@@ -35,7 +35,7 @@ export function metricsModule(filterFunction?: (p: string) => void) {
       let method = req.method || "unknown_method";
       method = method.toLowerCase();
       const urlName = req.url || "unknown_url";
-      let path = parse(urlName).pathname.toLowerCase();
+      let path = parse(urlName).pathname!.toLowerCase();
       path = path.replace(/\//g, " ").trim().replace(/\s/g, ".");
 
       let filterFunc = defaultFilter;

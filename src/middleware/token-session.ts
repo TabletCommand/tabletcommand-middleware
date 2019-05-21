@@ -50,7 +50,7 @@ export function tokenSession(allowedTokens: Array<{ token: string, username: str
     return filtered;
   };
 
-  const validateToken = function validateToken(err: Error, tokens: UserInfo[], req: express.Request, res: express.Response, next: express.NextFunction) {
+  const validateToken = function validateToken(err: Error | null, tokens: UserInfo[], req: express.Request, res: express.Response, next: express.NextFunction) {
     let token = "";
     if (_.has(req.headers, "x-tc-auth-token")) {
       const headerValue = req.headers["x-tc-auth-token"];

@@ -8,7 +8,7 @@ import redisModule from "./redis";
 export function store(Department: DepartmentModel, Session: SessionModel, User: UserModel, redisClient: RedisClient) {
   const redis = redisModule(redisClient);
   const database = databaseModule(Department, Session, User);
-  async function findDepartmentByApiKey(apiKey: string): Promise<{ department: Department, cached: boolean }> {
+  async function findDepartmentByApiKey(apiKey: string): Promise<{ department: Department | null, cached: boolean }> {
     let cached = false;
     const redisDepartment = await redis.findDepartmentByApiKey(apiKey);
 
@@ -26,13 +26,13 @@ export function store(Department: DepartmentModel, Session: SessionModel, User: 
     return redis.expireDepartmentByApiKey(apiKey);
   }
 
-  async function findSessionByToken(token: string): Promise<{ session: Session, user: User, department: Department, cached: boolean }> {
+  async function findSessionByToken(token: string): Promise<{ session: Session | null, user: User | null, department: Department | null, cached: boolean }> {
     let cached = false;
     const { session: rSession, user: rUser, department: rDepartment } = await redis.findSessionByToken(token);
 
-    let session: Session = null;
-    let user: User = null;
-    let department: Department = null;
+    let session: Session | null = null;
+    let user: User | null = null;
+    let department: Department | null = null;
     if (_.isObject(rSession) && _.isObject(rUser)) {
       session = rSession;
       user = rUser;
@@ -51,15 +51,14 @@ export function store(Department: DepartmentModel, Session: SessionModel, User: 
 
     // Invalid session, store an empty record
     // object.user is the userId...
-    const isValid = _.isObject(dSession) && _.isString(dSession.user);
-    if (!isValid) {
+    if (!_.isObject(dSession) && _.isString(dSession!.user)) {
       await redis.storeSessionByToken(token, null, null, null);
       return { session, user, department, cached };
     }
 
     session = dSession;
 
-    const dUser = await database.findUserByUserId(session.user);
+    const dUser = await database.findUserByUserId(session!.user);
 
     if (!_.isObject(dUser)) {
       await redis.storeSessionByToken(token, session, null, null);

@@ -18,13 +18,15 @@ describe("Store", function() {
   let store: ReturnType<typeof storeModule> ;
   let data: ReturnType<typeof dataModule>;
 
-  const testApiKey = data.apiKey;
-  const testToken = data.token;
+  let testApiKey: string;
+  let testToken: string;
 
   before(async () => {
     models = (await connect(db)).models;
     store = storeModule(models.Department, models.Session, models.User, redisClient);
     data = dataModule(mockgoose, mongoose, models, redisClient);
+    testApiKey = data.apiKey;
+    testToken = data.token;
   });
   beforeEach(function(done) {
     data.beforeEach(done);

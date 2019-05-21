@@ -1,0 +1,1 @@
+{"version":3,"file":"bunyan-logger.d.ts","sourceRoot":"","sources":["../../src/lib/bunyan-logger.ts"],"names":[],"mappings":"AAAA,OAAO,MAAM,MAAM,QAAQ,CAAC;AAC5B,OAAO,KAAK,OAAO,MAAM,SAAS,CAAC;AAEnC,wBAAgB,MAAM,CAAC,IAAI,EAAE,MAAM,EAAE,QAAQ,EAAE,MAAM,EAAE,YAAY,EAAE,OAAO,UA4B3E;AAED,wBAAgB,UAAU,CAAC,cAAc,EAAE,YAAY,CAAC,OAAO,MAAM,CAAC,qFAkBrE"}

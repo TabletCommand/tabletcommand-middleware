@@ -54,7 +54,7 @@ export function session(store: StoreModule) {
     return item;
   };
 
-  async function authByApiKey(req: express.Request, res: express.Response): Promise<Department> {
+  async function authByApiKey(req: express.Request, res: express.Response): Promise<Department | null> {
     const apiKey = detectApiKey(req.headers as Record<string, string>, req.query);
     debug(`found api key:${apiKey}.`);
     if (apiKey === "") {
@@ -69,22 +69,19 @@ export function session(store: StoreModule) {
     return department;
   }
 
-  async function authBySenecaCookie(req: express.Request, res: express.Response, callback: (err: Error, session: Session, user: User, department: Department) => void) {
+  async function authBySenecaCookie(req: express.Request, res: express.Response): Promise<{ session: Session | null, user: User | null, department: Department | null }> {
     const token = detectCookieSession(req.cookies);
     if (token === "") {
-      return callback(null, null, null, null);
+      return { session: null, user: null, department: null };
     }
 
     const { session, user, department } = await store.findSessionByToken(token);
-    const hasSession = _.isObject(session) && helpers.isActive(session);
-    const hasUser = _.isObject(user) && helpers.isActive(user);
-    if (hasSession && hasUser) {
+    if (_.isObject(session) && helpers.isActive(session) && _.isObject(user) && helpers.isActive(user)) {
       req.login = session;
       req.session = session;
       req.user = user;
 
-      const hasDepartment = _.isObject(department) && helpers.isActive(department);
-      if (hasDepartment) {
+      if (_.isObject(department) && helpers.isActive(department)) {
         req.department = department;
         req.departmentLog = departmentForLogging(department);
       }
