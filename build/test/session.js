@@ -30,11 +30,11 @@ describe("Session", function () {
         testToken = data.token;
         session = session_1.default(store);
     });
-    beforeEach(function (done) {
-        data.beforeEach(done);
+    beforeEach(async function () {
+        await data.beforeEach();
     });
-    afterEach(function (done) {
-        data.afterEach(done);
+    afterEach(async function () {
+        await data.afterEach();
     });
     it("isMocked", (done) => {
         chai_1.assert.isTrue(mockgoose.helper.isMocked());

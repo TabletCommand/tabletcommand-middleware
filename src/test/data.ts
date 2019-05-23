@@ -4,6 +4,7 @@ import { Department, BackendModels, MongooseModule, User } from "tabletcommand-b
 import { RedisClient } from "redis";
 import { SimpleCallback } from "../types/types";
 import { Mockgoose } from 'mockgoose';
+import { convertToPromise } from "../lib/helpers";
 
 // cSpell:words mockgoose tabletcommand backend signup apikey fdid flushall
 
@@ -67,45 +68,30 @@ export function data(mockgoose: Mockgoose, mongoose: MongooseModule, models: Bac
     isPro: true,
   };
 
-  const prepareTestData = function prepareTestData(callback: SimpleCallback<User>) {
+  const prepareTestData = async function prepareTestData(): Promise<User> {
     const testDepartment = new models.Department(d);
-    testDepartment.save(function(err, result) {
-      if (err) {
-        return callback(err);
-      }
+    await testDepartment.save();
 
-      const testSession = new models.Session(s);
-      testSession.save(function(err, result) {
-        if (err) {
-          return callback(err);
-        }
+    const testSession = new models.Session(s);
+    await testSession.save();
 
-        const testUser = new models.User(u);
-        testUser.save(function(err, result) {
-          return callback(err, result);
-        });
-      });
-    });
+    const testUser = new models.User(u);
+    await testUser.save();
+
+    return testUser;
   };
 
-  const afterEach = function afterEach(callback: SimpleCallback<unknown>) {
-    mockgoose.helper.reset().then(function() {
-      redisClient.flushall(function() {
-        callback(undefined);
-      });
-    });
+  const afterEach = async function afterEach(): Promise<void> {
+    await mockgoose.helper.reset();
+    await convertToPromise<string>(cb => redisClient.flushall(cb));
   };
 
-  const beforeEach = function beforeEach(callback: SimpleCallback<unknown>) {
-    mockgoose.prepareStorage().then(function() {
-      mongoose.connect("mongodb://127.0.0.1:27017/TestingDB", {
+  const beforeEach = async function beforeEach(): Promise<void> {
+    await mockgoose.prepareStorage();
+    await mongoose.connect("mongodb://127.0.0.1:27017/TestingDB", {
         useMongoClient: true, // this option silents the warning, but does not cleanup the data
-      }, function(err) {
-        prepareTestData(function() {
-          callback(err);
-        });
-      });
     });
+    await prepareTestData();
   };
 
   return {

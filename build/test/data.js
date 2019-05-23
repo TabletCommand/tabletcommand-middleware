@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const helpers_1 = require("../lib/helpers");
 // cSpell:words mockgoose tabletcommand backend signup apikey fdid flushall
 function data(mockgoose, mongoose, models, redisClient) {
     const apiKey = "secretapikey1990";
@@ -57,41 +58,25 @@ function data(mockgoose, mongoose, models, redisClient) {
         remoteLoggingEnabled: false,
         isPro: true,
     };
-    const prepareTestData = function prepareTestData(callback) {
+    const prepareTestData = async function prepareTestData() {
         const testDepartment = new models.Department(d);
-        testDepartment.save(function (err, result) {
-            if (err) {
-                return callback(err);
-            }
-            const testSession = new models.Session(s);
-            testSession.save(function (err, result) {
-                if (err) {
-                    return callback(err);
-                }
-                const testUser = new models.User(u);
-                testUser.save(function (err, result) {
-                    return callback(err, result);
-                });
-            });
-        });
+        await testDepartment.save();
+        const testSession = new models.Session(s);
+        await testSession.save();
+        const testUser = new models.User(u);
+        await testUser.save();
+        return testUser;
     };
-    const afterEach = function afterEach(callback) {
-        mockgoose.helper.reset().then(function () {
-            redisClient.flushall(function () {
-                callback(undefined);
-            });
-        });
+    const afterEach = async function afterEach() {
+        await mockgoose.helper.reset();
+        await helpers_1.convertToPromise(cb => redisClient.flushall(cb));
     };
-    const beforeEach = function beforeEach(callback) {
-        mockgoose.prepareStorage().then(function () {
-            mongoose.connect("mongodb://127.0.0.1:27017/TestingDB", {
-                useMongoClient: true,
-            }, function (err) {
-                prepareTestData(function () {
-                    callback(err);
-                });
-            });
+    const beforeEach = async function beforeEach() {
+        await mockgoose.prepareStorage();
+        await mongoose.connect("mongodb://127.0.0.1:27017/TestingDB", {
+            useMongoClient: true,
         });
+        await prepareTestData();
     };
     return {
         apiKey,

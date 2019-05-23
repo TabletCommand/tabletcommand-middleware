@@ -58,10 +58,10 @@ interface ResolveLoginArg {
 export declare function resolveLogin(args: ResolveLoginArg): UserInfo | null;
 export declare function extractInfoFromDevice(device: {
     token?: string;
-    env: any;
-    ver: any;
-    ua: any;
-    time: any;
+    env: string;
+    ver: string;
+    ua?: string;
+    time: number;
     bundleIdentifier?: string;
     silentEnabled?: boolean;
     richEnabled?: boolean;

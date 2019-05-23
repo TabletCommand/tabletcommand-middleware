@@ -1,6 +1,8 @@
 /// <reference types="node" />
+/// <reference types="mongoose" />
 import * as http from 'http';
 import { MongooseModule } from "tabletcommand-backend-models";
+import { AnyCallBack } from '../types/types';
 export declare function mongooseOnError(err: Error): void;
 export declare function mongooseOnDisconnected(): void;
 export declare function serverOnError(error: {
@@ -11,5 +13,5 @@ export declare function serverOnListening(startTime: number, server: http.Server
 export declare function redisOnError(err: Error): void;
 export declare function redisOnConnect<T extends {
     mongoUrl: string;
-}>(config: T, startTime: number, mongoose: MongooseModule, mongooseOnOpen: (cfg: T, startTime: number) => (...a: any[]) => any): () => void;
+}, R extends AnyCallBack>(config: T, startTime: number, mongoose: MongooseModule, mongooseOnOpen: (cfg: T, startTime: number) => R): () => Promise<typeof import("mongoose")>;
 //# sourceMappingURL=start.d.ts.map

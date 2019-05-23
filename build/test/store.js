@@ -27,11 +27,11 @@ describe("Store", function () {
         testApiKey = data.apiKey;
         testToken = data.token;
     });
-    beforeEach(function (done) {
-        data.beforeEach(done);
+    beforeEach(async function () {
+        await data.beforeEach();
     });
-    afterEach(function (done) {
-        data.afterEach(done);
+    afterEach(async function () {
+        await data.afterEach();
     });
     it("isMocked", (done) => {
         chai_1.assert.isTrue(mockgoose.helper.isMocked());

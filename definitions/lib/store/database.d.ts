@@ -2,19 +2,7 @@
 import { DepartmentModel, SessionModel, UserModel } from "tabletcommand-backend-models";
 export declare function database(Department: DepartmentModel, Session: SessionModel, User: UserModel): {
     findDepartmentByApiKey: (apiKey: string) => Promise<(import("mongoose").Document & {
-        _id: {
-            type: {
-                prototype: {} | {
-                    [x: string]: any;
-                } | {}[];
-                cacheHexString?: undefined;
-                createFromHexString: {};
-                createFromTime: {};
-                isValid: {};
-                generate: {};
-            };
-            auto: never;
-        };
+        _id: import("bson").ObjectId;
         uuid: string;
         department: string;
         fdid: string;
@@ -109,19 +97,7 @@ export declare function database(Department: DepartmentModel, Session: SessionMo
         tokenExpireDate: number;
     }>;
     findDepartmentById: (departmentId: string) => Promise<(import("mongoose").Document & {
-        _id: {
-            type: {
-                prototype: {} | {
-                    [x: string]: any;
-                } | {}[];
-                cacheHexString?: undefined;
-                createFromHexString: {};
-                createFromTime: {};
-                isValid: {};
-                generate: {};
-            };
-            auto: never;
-        };
+        _id: import("bson").ObjectId;
         uuid: string;
         department: string;
         fdid: string;

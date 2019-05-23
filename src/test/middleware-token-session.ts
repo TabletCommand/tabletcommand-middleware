@@ -33,7 +33,7 @@ describe("Token Session", function() {
     const req = {} as unknown as Express.Request;
     const session = tokenSession([{
       a: "b",
-    } as any]);
+    }] as unknown as Parameters<typeof tokenSession>[0]);
     return session(req as express.Request, {} as express.Response, function() {
       assert.isTrue(!_.isObject(req.user));
       return done();

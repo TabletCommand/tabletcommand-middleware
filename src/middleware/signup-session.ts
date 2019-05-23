@@ -17,25 +17,25 @@ export function customSession(Department: DepartmentModel) {
     return JSON.parse(JSON.stringify(item)); // Force convert the item to JSON
   };
 
-  const getDepartmentBySignupKey = function getDepartmentBySignupKey(req: express.Request, res: express.Response, callback: SimpleCallback<Department>) {
+  async function getDepartmentBySignupKey(req: express.Request, res: express.Response): Promise<Department | null> {
     // Bail if req.department was already set
     // by a different middleware
     if (_.isObject(req.department) && _.size(req.department) > 0) {
-      return callback(null, req.department);
+      return req.department;
     }
 
     let signupKey = "";
     if (_.isObject(req.query)) {
-      const query: any = req.query;
-      if (_.has(query, "signupKey")) {
+      const query = (req.query || {}) as { signupKey: string } | { signupkey: string } | {};
+      if ("signupKey" in query) {
         signupKey = query.signupKey;
-      } else if (_.has(req.query, "signupkey")) {
+      } else if ("signupkey" in query) {
         signupKey = query.signupkey;
       }
     }
 
     if (signupKey === "") {
-      return callback(null, null);
+      return null;
     }
 
     const query = {
@@ -43,20 +43,22 @@ export function customSession(Department: DepartmentModel) {
       signupKey,
     };
 
-    return Department.findOne(query, function findDepartmentCallback(err: Error, dbObject: Department) {
-      if (_.isObject(dbObject) && _.size(dbObject) > 0) {
-        req.department = dbObject.toObject();
-        req.departmentLog = departmentForLogging(dbObject.toJSON());
-      }
+    const dbObject = await Department.findOne(query);
+    if (_.isObject(dbObject) && _.size(dbObject) > 0) {
+      req.department = dbObject.toObject() as Department;
+      req.departmentLog = departmentForLogging(dbObject.toJSON() as Department);
+    }
 
-      return callback(err, dbObject);
-    });
-  };
+    return dbObject;
+  }
 
-  return function customSessionCallback(req: express.Request, res: express.Response, next: express.NextFunction) {
-    return getDepartmentBySignupKey(req, res, function getDepartmentBySignupKeyCallback(err, department) {
-      return next(err);
-    });
+  return async function customSessionCallback(req: express.Request, res: express.Response, next: express.NextFunction) {
+    try {
+      await getDepartmentBySignupKey(req, res);
+      next();
+    } catch (err) {
+      next(err);
+    }
   };
 }
 

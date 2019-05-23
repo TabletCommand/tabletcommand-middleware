@@ -14,41 +14,44 @@ function customSession(Department) {
         ]);
         return JSON.parse(JSON.stringify(item)); // Force convert the item to JSON
     };
-    const getDepartmentBySignupKey = function getDepartmentBySignupKey(req, res, callback) {
+    async function getDepartmentBySignupKey(req, res) {
         // Bail if req.department was already set
         // by a different middleware
         if (lodash_1.default.isObject(req.department) && lodash_1.default.size(req.department) > 0) {
-            return callback(null, req.department);
+            return req.department;
         }
         let signupKey = "";
         if (lodash_1.default.isObject(req.query)) {
-            const query = req.query;
-            if (lodash_1.default.has(query, "signupKey")) {
+            const query = (req.query || {});
+            if ("signupKey" in query) {
                 signupKey = query.signupKey;
             }
-            else if (lodash_1.default.has(req.query, "signupkey")) {
+            else if ("signupkey" in query) {
                 signupKey = query.signupkey;
             }
         }
         if (signupKey === "") {
-            return callback(null, null);
+            return null;
         }
         const query = {
             active: true,
             signupKey,
         };
-        return Department.findOne(query, function findDepartmentCallback(err, dbObject) {
-            if (lodash_1.default.isObject(dbObject) && lodash_1.default.size(dbObject) > 0) {
-                req.department = dbObject.toObject();
-                req.departmentLog = departmentForLogging(dbObject.toJSON());
-            }
-            return callback(err, dbObject);
-        });
-    };
-    return function customSessionCallback(req, res, next) {
-        return getDepartmentBySignupKey(req, res, function getDepartmentBySignupKeyCallback(err, department) {
-            return next(err);
-        });
+        const dbObject = await Department.findOne(query);
+        if (lodash_1.default.isObject(dbObject) && lodash_1.default.size(dbObject) > 0) {
+            req.department = dbObject.toObject();
+            req.departmentLog = departmentForLogging(dbObject.toJSON());
+        }
+        return dbObject;
+    }
+    return async function customSessionCallback(req, res, next) {
+        try {
+            await getDepartmentBySignupKey(req, res);
+            next();
+        }
+        catch (err) {
+            next(err);
+        }
     };
 }
 exports.customSession = customSession;

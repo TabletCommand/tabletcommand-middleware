@@ -1,20 +1,8 @@
 /// <reference types="mongoose" />
 import { RedisClient } from "redis";
 export declare function redis(client: RedisClient): {
-    findDepartmentByApiKey: (apiKey: string) => Promise<import("mongoose").Document & {
-        _id: {
-            type: {
-                prototype: {} | {
-                    [x: string]: any;
-                } | {}[];
-                cacheHexString?: undefined;
-                createFromHexString: {};
-                createFromTime: {};
-                isValid: {};
-                generate: {};
-            };
-            auto: never;
-        };
+    findDepartmentByApiKey: (apiKey: string) => Promise<(import("mongoose").Document & {
+        _id: import("bson").ObjectId;
         uuid: string;
         department: string;
         fdid: string;
@@ -59,21 +47,9 @@ export declare function redis(client: RedisClient): {
         }[];
         signupKey: string;
         signupDomains: string[];
-    }>;
+    }) | null>;
     storeDepartmentByApiKey: (apiKey: string, item: (import("mongoose").Document & {
-        _id: {
-            type: {
-                prototype: {} | {
-                    [x: string]: any;
-                } | {}[];
-                cacheHexString?: undefined;
-                createFromHexString: {};
-                createFromTime: {};
-                isValid: {};
-                generate: {};
-            };
-            auto: never;
-        };
+        _id: import("bson").ObjectId;
         uuid: string;
         department: string;
         fdid: string;
@@ -121,7 +97,7 @@ export declare function redis(client: RedisClient): {
     }) | null) => Promise<"OK">;
     expireDepartmentByApiKey: (apiKey: string) => Promise<number>;
     findSessionByToken: (token: string) => Promise<{
-        session: import("mongoose").Document & {
+        session: (import("mongoose").Document & {
             _id: string;
             nick: string;
             email: string;
@@ -136,8 +112,8 @@ export declare function redis(client: RedisClient): {
             userAgent: string;
             remoteAddress: string;
             deviceId: string;
-        };
-        user: import("mongoose").Document & {
+        }) | null;
+        user: (import("mongoose").Document & {
             nick: string;
             email: string;
             name: string;
@@ -168,21 +144,9 @@ export declare function redis(client: RedisClient): {
             rtsAuthKey: string;
             token: string;
             tokenExpireDate: number;
-        };
-        department: import("mongoose").Document & {
-            _id: {
-                type: {
-                    prototype: {} | {
-                        [x: string]: any;
-                    } | {}[];
-                    cacheHexString?: undefined;
-                    createFromHexString: {};
-                    createFromTime: {};
-                    isValid: {};
-                    generate: {};
-                };
-                auto: never;
-            };
+        }) | null;
+        department: (import("mongoose").Document & {
+            _id: import("bson").ObjectId;
             uuid: string;
             department: string;
             fdid: string;
@@ -227,7 +191,7 @@ export declare function redis(client: RedisClient): {
             }[];
             signupKey: string;
             signupDomains: string[];
-        };
+        }) | null;
     }>;
     storeSessionByToken: (token: string, session: (import("mongoose").Document & {
         _id: string;
@@ -276,19 +240,7 @@ export declare function redis(client: RedisClient): {
         token: string;
         tokenExpireDate: number;
     }) | null, department: (import("mongoose").Document & {
-        _id: {
-            type: {
-                prototype: {} | {
-                    [x: string]: any;
-                } | {}[];
-                cacheHexString?: undefined;
-                createFromHexString: {};
-                createFromTime: {};
-                isValid: {};
-                generate: {};
-            };
-            auto: never;
-        };
+        _id: import("bson").ObjectId;
         uuid: string;
         department: string;
         fdid: string;

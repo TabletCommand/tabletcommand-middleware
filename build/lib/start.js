@@ -49,12 +49,13 @@ exports.redisOnError = redisOnError;
 function redisOnConnect(config, startTime, mongoose, mongooseOnOpen) {
     return function redisOnConnectFunc() {
         console.log(`Redis connected after ${(new Date().valueOf() - startTime)}ms.`);
-        mongoose.connect(config.mongoUrl, {
+        const p = mongoose.connect(config.mongoUrl, {
             useMongoClient: true,
         });
         mongoose.connection.on("error", mongooseOnError);
         mongoose.connection.on("disconnected", mongooseOnDisconnected);
         mongoose.connection.on("open", mongooseOnOpen(config, startTime));
+        return p;
     };
 }
 exports.redisOnConnect = redisOnConnect;

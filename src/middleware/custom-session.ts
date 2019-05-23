@@ -16,13 +16,13 @@ export function customSession(Department: DepartmentModel, Session: SessionModel
     return JSON.parse(JSON.stringify(item)); // Force convert the item to JSON
   };
 
-  const getSession = function getSession(req: express.Request, res: express.Response, callback: SimpleCallback<Session>) {
+  async function getSession(req: express.Request, res: express.Response): Promise<Session | null> {
     const cookies: unknown = req.cookies;
     function hasLogin(c: unknown): c is { "seneca-login": string } {
       return _.isObject(c) && _.isString((c as { "seneca-login": string })["seneca-login"]);
     }
     if (!hasLogin(cookies)) {
-      return callback(null, null);
+      return null;
     }
 
     const query = {
@@ -30,24 +30,22 @@ export function customSession(Department: DepartmentModel, Session: SessionModel
       active: true,
     };
 
-    return Session.findOne(query, function findSessionCallback(err, dbObject) {
-      if (_.isObject(dbObject) && _.size(dbObject) > 0) {
-        req.login = dbObject.toObject();
-        req.session = dbObject.toObject();
-      }
+    const dbObject = await Session.findOne(query);
+    if (_.isObject(dbObject) && _.size(dbObject) > 0) {
+      req.login = dbObject.toObject() as Session;
+      req.session = dbObject.toObject() as Session;
+    }
+    return dbObject;
+  }
 
-      return callback(err, dbObject);
-    });
-  };
-
-  const getUser = function getUser(req: express.Request, res: express.Response, callback: SimpleCallback<User>) {
+  async function getUser(req: express.Request, res: express.Response): Promise<User | null> {
     if (!_.isObject(req.login)) {
-      return callback(null, null);
+      return null;
     }
 
     const session = req.login;
     if (!_.isString(session.user)) {
-      return callback(null, null);
+      return null;
     }
 
     const query = {
@@ -55,18 +53,17 @@ export function customSession(Department: DepartmentModel, Session: SessionModel
       active: true,
     };
 
-    return User.findOne(query, function findUserCallback(err, dbObject) {
-      if (_.isObject(dbObject) && _.size(dbObject) > 0) {
-        req.user = dbObject.toObject();
-      }
+    const dbObject = await User.findOne(query);
+    if (_.isObject(dbObject) && _.size(dbObject) > 0) {
+      req.user = dbObject.toObject() as User;
+    }
 
-      return callback(err, dbObject);
-    });
-  };
+    return dbObject;
+  }
 
-  const getDepartmentByUser = function getDepartmentByUser(req: express.Request, res: express.Response, callback: SimpleCallback<Department>) {
+  async function getDepartmentByUser(req: express.Request, res: express.Response): Promise<Department | null> {
     if (!_.isObject(req.user)) {
-      return callback(null, null);
+      return null;
     }
 
     const user = req.user;
@@ -75,39 +72,39 @@ export function customSession(Department: DepartmentModel, Session: SessionModel
     const isSuperUser = isSuper(user);
 
     let noQueryDepartmentId = true;
-    if (noUserDepartmentId && _.isString(req.query.departmentId)) {
+    const query = req.query as { departmentId?: string };
+    if (noUserDepartmentId && _.isString(query.departmentId)) {
       noQueryDepartmentId = false;
-      departmentId = req.query.departmentId;
+      departmentId = query.departmentId;
     }
 
     if (isSuperUser && noUserDepartmentId && noQueryDepartmentId) {
-      return callback(null, null);
+      return null;
     }
 
-    return Department.findById(departmentId, function findDepartmentCallback(err, dbObject) {
-      if (_.isObject(dbObject) && _.size(dbObject) > 0) {
-        req.department = dbObject.toObject();
-        req.departmentLog = departmentForLogging(dbObject.toJSON());
-      }
+    const dbObject = await Department.findById(departmentId);
+    if (_.isObject(dbObject) && _.size(dbObject) > 0) {
+      req.department = dbObject.toObject() as Department;
+      req.departmentLog = departmentForLogging(dbObject.toJSON() as Department);
+    }
 
-      return callback(err, dbObject);
-    });
-  };
+    return dbObject;
+  }
 
-  const getDepartmentByApiKey = function getDepartmentByApiKey(req: express.Request, res: express.Response, callback: SimpleCallback<Department>) {
+  async function getDepartmentByApiKey(req: express.Request, res: express.Response): Promise<Department | null> {
     let apiKey = "";
     if (_.isObject(req.headers) && _.has(req.headers, "apikey")) {
       apiKey = req.headers.apiKey as string;
     } else if (_.isObject(req.headers) && _.has(req.headers, "apikey")) {
       apiKey = req.headers.apikey as string;
     } else if (_.isObject(req.query) && _.has(req.query, "apikey")) {
-      apiKey = (req.query as any).apiKey;
+      apiKey = (req.query as { apiKey: string }).apiKey;
     } else if (_.isObject(req.query) && _.has(req.query, "apikey")) {
-      apiKey = (req.query as any).apikey;
+      apiKey = (req.query as { apikey: string }).apikey;
     }
 
     if (apiKey === "") {
-      return callback(null, null);
+      return null;
     }
 
     const query = {
@@ -115,37 +112,29 @@ export function customSession(Department: DepartmentModel, Session: SessionModel
       active: true,
     };
 
-    return Department.findOne(query, function findDepartmentByApiKeyCallback(err, dbObject) {
-      if (_.isObject(dbObject) && _.size(dbObject) > 0) {
-        req.department = dbObject.toObject();
-        req.departmentLog = departmentForLogging(dbObject.toJSON());
-      }
+    const dbObject = await Department.findOne(query);
+    if (_.isObject(dbObject) && _.size(dbObject) > 0) {
+      req.department = dbObject.toObject() as Department;
+      req.departmentLog = departmentForLogging(dbObject.toJSON() as Department);
+    }
+    return dbObject;
+  }
 
-      return callback(err, dbObject);
-    });
-  };
-
-  return function(req: express.Request, res: express.Response, next: express.NextFunction) {
-    return getDepartmentByApiKey(req, res, function getDepartmentByApiKeyCallback(err, department) {
+  return async function(req: express.Request, res: express.Response, next: express.NextFunction) {
+    try {
+      const department = await getDepartmentByApiKey(req, res);
       if (!_.isNull(department) && _.size(department) > 0) {
-        return next(err);
+        return next(null);
       }
 
       // Trying to resolve using a session cookie
-      return getSession(req, res, function getSessionCallback(err, session) {
-        if (err) {
-          return next(err);
-        }
-        return getUser(req, res, function getUserCallback(err, user) {
-          if (err) {
-            return next(err);
-          }
-          return getDepartmentByUser(req, res, function getDepartmentByUserCallback(err, department) {
-            return next(err);
-          });
-        });
-      });
-    });
+      await getSession(req, res);
+      await getUser(req, res);
+      await getDepartmentByUser(req, res);
+      return next(null);
+    } catch (e) {
+      next(e);
+    }
   };
 }
 export default customSession;

@@ -17,12 +17,12 @@
         "interface-name":false,
         "no-shadowed-variable":false,
         "no-console":false,
-        //"no-any": true,
-        //"no-unsafe-any":true,
+        "no-any": true,
+        "no-unsafe-any":true,
         "max-line-length":false,
         "radix":false,
-        "arrow-parens": false
-        // "no-floating-promises": true
+        "arrow-parens": false,
+        "no-floating-promises": true
     },
     "rulesDirectory": []
 }

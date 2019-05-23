@@ -34,12 +34,12 @@ describe("Session", function() {
     session = sessionModule(store);
   });
 
-  beforeEach(function(done) {
-    data.beforeEach(done);
+  beforeEach(async function() {
+    await data.beforeEach();
   });
 
-  afterEach(function(done) {
-    data.afterEach(done);
+  afterEach(async function() {
+    await data.afterEach();
   });
 
   it("isMocked", (done) => {
@@ -186,7 +186,7 @@ describe("Session", function() {
       assert.isObject(user);
       assert.isObject(department);
       assert.isObject(fakeReq.session);
-      assert.isObject((fakeReq as any).login);
+      assert.isObject(fakeReq.login);
       assert.isObject(fakeReq.user);
       assert.isObject(fakeReq.department);
       assert.equal(data.session.token, testToken);

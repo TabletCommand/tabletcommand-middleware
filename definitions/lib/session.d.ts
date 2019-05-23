@@ -6,19 +6,7 @@ export declare function session(store: StoreModule): {
     detectCookieSession: (cookies: Record<string, string>) => string;
     sessionCookieName: string;
     departmentForLogging: (department: import("mongoose").Document & {
-        _id: {
-            type: {
-                prototype: {} | {
-                    [x: string]: any;
-                } | {}[];
-                cacheHexString?: undefined;
-                createFromHexString: {};
-                createFromTime: {};
-                isValid: {};
-                generate: {};
-            };
-            auto: never;
-        };
+        _id: import("bson").ObjectId;
         uuid: string;
         department: string;
         fdid: string;
@@ -65,19 +53,7 @@ export declare function session(store: StoreModule): {
         signupDomains: string[];
     }) => {};
     authByApiKey: (req: express.Request, res: express.Response) => Promise<(import("mongoose").Document & {
-        _id: {
-            type: {
-                prototype: {} | {
-                    [x: string]: any;
-                } | {}[];
-                cacheHexString?: undefined;
-                createFromHexString: {};
-                createFromTime: {};
-                isValid: {};
-                generate: {};
-            };
-            auto: never;
-        };
+        _id: import("bson").ObjectId;
         uuid: string;
         department: string;
         fdid: string;
@@ -173,19 +149,7 @@ export declare function session(store: StoreModule): {
             tokenExpireDate: number;
         }) | null;
         department: (import("mongoose").Document & {
-            _id: {
-                type: {
-                    prototype: {} | {
-                        [x: string]: any;
-                    } | {}[];
-                    cacheHexString?: undefined;
-                    createFromHexString: {};
-                    createFromTime: {};
-                    isValid: {};
-                    generate: {};
-                };
-                auto: never;
-            };
+            _id: import("bson").ObjectId;
             uuid: string;
             department: string;
             fdid: string;

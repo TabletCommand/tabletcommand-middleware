@@ -4,19 +4,7 @@ import { RedisClient } from "redis";
 export declare function store(Department: DepartmentModel, Session: SessionModel, User: UserModel, redisClient: RedisClient): {
     findDepartmentByApiKey: (apiKey: string) => Promise<{
         department: (import("mongoose").Document & {
-            _id: {
-                type: {
-                    prototype: {} | {
-                        [x: string]: any;
-                    } | {}[];
-                    cacheHexString?: undefined;
-                    createFromHexString: {};
-                    createFromTime: {};
-                    isValid: {};
-                    generate: {};
-                };
-                auto: never;
-            };
+            _id: import("bson").ObjectId;
             uuid: string;
             department: string;
             fdid: string;
@@ -115,19 +103,7 @@ export declare function store(Department: DepartmentModel, Session: SessionModel
             tokenExpireDate: number;
         }) | null;
         department: (import("mongoose").Document & {
-            _id: {
-                type: {
-                    prototype: {} | {
-                        [x: string]: any;
-                    } | {}[];
-                    cacheHexString?: undefined;
-                    createFromHexString: {};
-                    createFromTime: {};
-                    isValid: {};
-                    generate: {};
-                };
-                auto: never;
-            };
+            _id: import("bson").ObjectId;
             uuid: string;
             department: string;
             fdid: string;

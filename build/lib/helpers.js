@@ -200,6 +200,7 @@ function stripSessionFields(value, key) {
 }
 function cleanupUser(user) {
     // Usage assertions, the definitions don't seem to know about this overload.
+    // tslint:disable-next-line: no-any
     return lodash_1.default.omit(user, stripSessionFields);
 }
 exports.cleanupUser = cleanupUser;
@@ -310,7 +311,7 @@ function extractInfoFromDevice(device) {
         }
     }
     if (!lodash_1.default.isUndefined(device.time) && !lodash_1.default.isNull(device.time)) {
-        const secondsAgo = unixDate - parseFloat(device.time);
+        const secondsAgo = unixDate - parseFloat(device.time + "");
         info.daysSinceEvent = Math.floor(secondsAgo / dayAsSeconds);
     }
     return info;
@@ -370,6 +371,8 @@ function logUserDevice(postUrl, authToken, user, session, headers) {
     };
     const filter = [];
     const shouldFilter = false;
+    // contains does not appear to be in the current definitions
+    // tslint:disable-next-line: no-any no-unsafe-any
     if (shouldFilter && lodash_1.default.contains(filter, item.appVer)) {
         return;
     }

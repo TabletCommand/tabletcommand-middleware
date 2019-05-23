@@ -133,7 +133,7 @@ export function joinParentChildCollections<
     };
   });
 
-  const unmergedItems = _.flatten([mapApiIdItems as any as typeof mapLocalIdItems, mapLocalIdItems]);
+  const unmergedItems = _.flatten([mapApiIdItems as unknown as typeof mapLocalIdItems, mapLocalIdItems]);
   const reducedIds = _.reduce(unmergedItems, function(memo, i) {
     if (!_.has(memo, i.id)) {
       memo[i.id] = [];
@@ -254,7 +254,7 @@ export function isItemValidOnMap(item: { latitude: string; longitude: string; })
   return true;
 }
 
-function stripSessionFields(value: any, key: string) {
+function stripSessionFields(value: unknown, key: string) {
   const fields = ["pass", "salt", "when"];
   const skipFields = _.isString(key) && _.includes(fields, key.toLowerCase());
   const filterSeneca = _.isString(key) && _.trimEnd(key, "$") !== key;
@@ -264,6 +264,7 @@ function stripSessionFields(value: any, key: string) {
 
 export function cleanupUser(user: UserInfo): UserInfo {
   // Usage assertions, the definitions don't seem to know about this overload.
+  // tslint:disable-next-line: no-any
   return _.omit(user, stripSessionFields as any);
 }
 
@@ -341,7 +342,7 @@ function getClosedOrDate() {
   return closedOr;
 }
 
-export function extractInfoFromDevice(device: { token?: string; env: any; ver: any; ua: any; time: any; bundleIdentifier?: string; silentEnabled?: boolean; richEnabled?: boolean; }) {
+export function extractInfoFromDevice(device: { token?: string; env: string; ver: string; ua?: string; time: number; bundleIdentifier?: string; silentEnabled?: boolean; richEnabled?: boolean; }) {
   const maxDaysSinceEvent = 120;
   const info = {
     appVer: "Unknown",
@@ -394,7 +395,7 @@ export function extractInfoFromDevice(device: { token?: string; env: any; ver: a
   }
 
   if (!_.isUndefined(device.time) && !_.isNull(device.time)) {
-    const secondsAgo = unixDate - parseFloat(device.time);
+    const secondsAgo = unixDate - parseFloat(device.time + "");
     info.daysSinceEvent = Math.floor(secondsAgo / dayAsSeconds);
   }
 
@@ -462,6 +463,8 @@ export function logUserDevice(postUrl: string, authToken: string, user: User, se
   const filter: string[] = [];
 
   const shouldFilter = false;
+  // contains does not appear to be in the current definitions
+  // tslint:disable-next-line: no-any no-unsafe-any
   if (shouldFilter && (_ as any).contains(filter, item.appVer)) {
     return;
   }

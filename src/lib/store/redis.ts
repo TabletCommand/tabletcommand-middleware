@@ -11,13 +11,13 @@ export function redis(client: RedisClient) {
 
   const debug = debugModule("tabletcommand-middleware:store:redis");
 
-  async function findDepartmentByApiKey(apiKey: string): Promise<Department> {
+  async function findDepartmentByApiKey(apiKey: string): Promise<Department | null> {
     const key = `api:${apiKey}`;
     debug(`GET ${key}`);
     const item = await convertToPromise<string>(cb => client.get(key, cb));
-    let object = null;
+    let object: Department | null = null;
     try {
-      object = JSON.parse(item);
+      object = JSON.parse(item) as Department;
     } catch (e) {
       // Parse failed, object is null which is fine.
     }
@@ -44,7 +44,7 @@ export function redis(client: RedisClient) {
     return convertToPromise<number>(cb => client.expire(key, ttl, cb));
   }
 
-  async function findSessionByToken(token: string): Promise<{ session: Session, user: User, department: Department }> {
+  async function findSessionByToken(token: string): Promise<{ session: Session | null, user: User | null, department: Department | null }> {
     const key = `s:${token}`;
 
     debug(`GET ${key}`);
@@ -53,7 +53,11 @@ export function redis(client: RedisClient) {
     let user = null;
     let department = null;
     try {
-      const object = JSON.parse(item);
+      const object = JSON.parse(item) as  {
+        s?: Session;
+        u?: User;
+        d?: Department;
+      };
       if (_.isObject(object.s)) {
         session = object.s;
       }

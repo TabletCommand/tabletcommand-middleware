@@ -1,25 +1,12 @@
 /// <reference types="mongoose" />
 import { BackendModels, MongooseModule } from "tabletcommand-backend-models";
 import { RedisClient } from "redis";
-import { SimpleCallback } from "../types/types";
 import { Mockgoose } from 'mockgoose';
 export declare function data(mockgoose: Mockgoose, mongoose: MongooseModule, models: BackendModels, redisClient: RedisClient): {
     apiKey: string;
     token: string;
     department: Partial<import("mongoose").Document & {
-        _id: {
-            type: {
-                prototype: {} | {
-                    [x: string]: any;
-                } | {}[];
-                cacheHexString?: undefined;
-                createFromHexString: {};
-                createFromTime: {};
-                isValid: {};
-                generate: {};
-            };
-            auto: never;
-        };
+        _id: import("bson").ObjectId;
         uuid: string;
         department: string;
         fdid: string;
@@ -93,7 +80,7 @@ export declare function data(mockgoose: Mockgoose, mongoose: MongooseModule, mod
         remoteLoggingEnabled: boolean;
         isPro: boolean;
     };
-    prepareTestData: (callback: SimpleCallback<import("mongoose").Document & {
+    prepareTestData: () => Promise<import("mongoose").Document & {
         nick: string;
         email: string;
         name: string;
@@ -124,9 +111,9 @@ export declare function data(mockgoose: Mockgoose, mongoose: MongooseModule, mod
         rtsAuthKey: string;
         token: string;
         tokenExpireDate: number;
-    }>) => void;
-    beforeEach: (callback: SimpleCallback<unknown>) => void;
-    afterEach: (callback: SimpleCallback<unknown>) => void;
+    }>;
+    beforeEach: () => Promise<void>;
+    afterEach: () => Promise<void>;
 };
 export default data;
 //# sourceMappingURL=data.d.ts.map

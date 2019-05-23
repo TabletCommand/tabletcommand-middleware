@@ -11,7 +11,14 @@
        "outDir": "../build",
        "declarationDir": "../definitions",
        "sourceMap": true,
-       "declarationMap": true
+       "declarationMap": true,
+       "baseUrl": "./",
+       "paths": {
+           "*": [
+               "../node_modules/@types/*",
+               "*"
+           ],
+       }
     },
     "exclude": [ 
         //"test/**.ts"

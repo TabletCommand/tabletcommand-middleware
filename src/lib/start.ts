@@ -4,6 +4,7 @@ import { AddressInfo } from 'net';
 
 // cSpell:words nmea
 import debugModule from "debug";
+import { AnyCallBack } from '../types/types';
 const debug = debugModule("server-nmea:storage");
 
 export function mongooseOnError(err: Error) {
@@ -47,15 +48,16 @@ export function redisOnError(err: Error) {
   process.exit(1);
 }
 
-export function redisOnConnect<T extends { mongoUrl: string }>(config: T, startTime: number, mongoose: MongooseModule, mongooseOnOpen: (cfg: T, startTime: number) => (...a: any[]) => any) {
+export function redisOnConnect<T extends { mongoUrl: string }, R extends AnyCallBack>(config: T, startTime: number, mongoose: MongooseModule, mongooseOnOpen: (cfg: T, startTime: number) => R) {
   return function redisOnConnectFunc() {
     console.log(`Redis connected after ${(new Date().valueOf() - startTime)}ms.`);
 
-    mongoose.connect(config.mongoUrl, {
+    const p = mongoose.connect(config.mongoUrl, {
       useMongoClient: true,
     });
     mongoose.connection.on("error", mongooseOnError);
     mongoose.connection.on("disconnected", mongooseOnDisconnected);
     mongoose.connection.on("open", mongooseOnOpen(config, startTime));
+    return p;
   };
 }
