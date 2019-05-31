@@ -11,7 +11,6 @@ gulp.task('clean', function(){
   return del('build/**', {force:true});
 });
 
-
 gulp.task("ts", gulp.series("clean", shell.task("tsc -p .\\src")));
 
 gulp.task("tslint", function() {
