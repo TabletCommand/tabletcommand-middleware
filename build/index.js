@@ -36,4 +36,5 @@ exports.routesCommon = routesCommonModule;
 exports.start = startModule;
 exports.logger = loggerModule;
 exports.configResolver = config_resolver_1.default;
+exports.default = {};
 //# sourceMappingURL=index.js.map

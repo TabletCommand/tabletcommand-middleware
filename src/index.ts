@@ -25,3 +25,4 @@ export const routesCommon = routesCommonModule;
 export const start = startModule;
 export const logger = loggerModule;
 export const configResolver = configResolverModule;
+export default {};

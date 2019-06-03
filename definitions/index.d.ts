@@ -24,4 +24,6 @@ export declare const routesCommon: typeof routesCommonModule;
 export declare const start: typeof startModule;
 export declare const logger: typeof loggerModule;
 export declare const configResolver: typeof configResolverModule;
+declare const _default: {};
+export default _default;
 //# sourceMappingURL=index.d.ts.map

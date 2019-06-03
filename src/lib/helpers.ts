@@ -265,7 +265,7 @@ function stripSessionFields(value: unknown, key: string) {
 export function cleanupUser(user: UserInfo): UserInfo {
   // Usage assertions, the definitions don't seem to know about this overload.
   // tslint:disable-next-line: no-any
-  return _.omit(user, stripSessionFields as any);
+  return _.omit(user, stripSessionFields as any) as UserInfo;
 }
 
 export function resolveUser(args: { req$: express.Request, user: UserInfo }): { user: UserInfo, session: Session | null } | null {
