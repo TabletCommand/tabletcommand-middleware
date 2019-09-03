@@ -191,23 +191,22 @@ describe("Session", function() {
       });
     });
 
-    // TODO - This tests needs updated models for Agencies to be included in Department
-    // it("resolved with correct personnel api key", function(done) {
-    //   let fakeReq = {
-    //     headers: {
-    //       personnelapikey: testPersonnelApiKey
-    //     }
-    //   };
-    //   let fakeRes = {};
-    //   session.authByPersonnelApiKey(fakeReq, fakeRes, function(err, department) {
-    //     assert.isNull(err);
-    //     assert.isObject(department);
-    //     assert.isObject(fakeReq.department);
-    //     assert.deepEqual(department, fakeReq.department);
-    //     assert.equal(data.personnelApiKey, department.agencies[0].personnelApiKey);
-    //     done();
-    //   });
-    // });
+    it("resolved with correct personnel api key", function(done) {
+      let fakeReq = {
+        headers: {
+          personnelapikey: testPersonnelApiKey
+        }
+      };
+      let fakeRes = {};
+      session.authByPersonnelApiKey(fakeReq, fakeRes, function(err, department) {
+        assert.isNull(err);
+        assert.isObject(department);
+        assert.isObject(fakeReq.department);
+        assert.deepEqual(department, fakeReq.department);
+        assert.equal(data.personnelApiKey, department.agencies[0].personnelApiKey);
+        done();
+      });
+    });
   });
 
   context("detectCookieSession", function() {

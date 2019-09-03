@@ -10,6 +10,7 @@ module.exports = function(Department, Session, User) {
       "_id",
       "id",
       "agency",
+      "agencies",
       "incidentTypes",
       "rtsChannelPrefix",
       "rtsEnabled",

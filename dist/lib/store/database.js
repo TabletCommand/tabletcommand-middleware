@@ -8,7 +8,7 @@ module.exports = function (Department, Session, User) {
   var debug = require("debug")("tabletcommand-middleware:store:database");
 
   var fields = {
-    department: ["_id", "id", "agency", "incidentTypes", "rtsChannelPrefix", "rtsEnabled", "pushEnabled", "heartbeatEnabled", "cadBidirectionalEnabled", "cadMonitorMinutes", "cadMonitorEnabled", "cadEmailUsername", "apikey", "active", "department", "userContributionEnabled"]
+    department: ["_id", "id", "agency", "agencies", "incidentTypes", "rtsChannelPrefix", "rtsEnabled", "pushEnabled", "heartbeatEnabled", "cadBidirectionalEnabled", "cadMonitorMinutes", "cadMonitorEnabled", "cadEmailUsername", "apikey", "active", "department", "userContributionEnabled"]
   };
 
   var findDepartmentByApiKey = function findDepartmentByApiKey(apiKey, callback) {
