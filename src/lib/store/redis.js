@@ -37,6 +37,38 @@ module.exports = function(client) {
     return expireItemByKey(key, callback);
   };
 
+  const findDepartmentByPersonnelApiKey = function findDepartmentByPersonnelApiKey(personnelApiKey, callback) {
+    const key = "personnelapi:" + personnelApiKey;
+    debug("GET " + key);
+    return client.get(key, function (err, item) {
+      if (err) {
+        return callback(err, null);
+      }
+
+      let object = null;
+      try {
+        object = JSON.parse(item);
+      } catch (e) {}
+
+      return callback(null, object);
+    });
+  };
+
+  const storeDepartmentByPersonnelApiKey = function storeDepartmentByPersonnelApiKey(personnelApiKey, item, callback) {
+    const key = "personnelapi:" + personnelApiKey;
+    const val = JSON.stringify(item);
+    const ttl = 60 * 60 * 24; // 24h
+    debug("SET " + key + " " + val + " \"EX\" " + ttl);
+    return client.set(key, val, "EX", ttl, function (err, result) {
+      return callback(err, result);
+    });
+  };
+
+  const expireDepartmentByPersonnelApiKey = function expireDepartmentByPersonnelApiKey(personnelApiKey, callback) {
+    const key = "personnelapi:" + personnelApiKey;
+    return expireItemByKey(key, callback);
+  };
+
   const expireItemByKey = function expireItemByKey(key, callback) {
     const ttl = 0;
     debug(`EXPIRE ${key} ${ttl}`);
@@ -98,6 +130,9 @@ module.exports = function(client) {
     findDepartmentByApiKey: findDepartmentByApiKey,
     storeDepartmentByApiKey: storeDepartmentByApiKey,
     expireDepartmentByApiKey: expireDepartmentByApiKey,
+    findDepartmentByPersonnelApiKey: findDepartmentByPersonnelApiKey,
+    storeDepartmentByPersonnelApiKey: storeDepartmentByPersonnelApiKey,
+    expireDepartmentByPersonnelApiKey: expireDepartmentByPersonnelApiKey,
 
     findSessionByToken: findSessionByToken,
     storeSessionByToken: storeSessionByToken,

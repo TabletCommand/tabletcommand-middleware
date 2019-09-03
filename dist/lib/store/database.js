@@ -26,6 +26,21 @@ module.exports = function (Department, Session, User) {
     });
   };
 
+  var findDepartmentByPersonnelApiKey = function findDepartmentByPersonnelApiKey(personnelApiKey, callback) {
+    var query = {
+      "agencies.personnelApiKey": personnelApiKey
+    };
+
+    debug("Department.findOne: " + JSON.stringify(query) + ".");
+    Department.findOne(query, fields.department, function findOneCallback(err, dbItem) {
+      var item = null;
+      if (_.isObject(dbItem)) {
+        item = JSON.parse(JSON.stringify(dbItem.toJSON()));
+      }
+      return callback(err, item);
+    });
+  };
+
   var findSessionByToken = function findSessionByToken(token, callback) {
     var query = {
       token: token
@@ -75,6 +90,7 @@ module.exports = function (Department, Session, User) {
 
   return {
     findDepartmentByApiKey: findDepartmentByApiKey,
+    findDepartmentByPersonnelApiKey: findDepartmentByPersonnelApiKey,
 
     findSessionByToken: findSessionByToken,
     findUserByUserId: findUserByUserId,

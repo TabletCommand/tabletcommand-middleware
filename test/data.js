@@ -4,6 +4,7 @@
 
 module.exports = function(mockgoose, mongoose, models, redisClient) {
   const apiKey = "secretapikey1990";
+  const personnelApiKey = "secretpersonnelapikey2299";
   const departmentId = "5195426cc4e016a988000965";
   const d = {
     "_id": departmentId,
@@ -21,6 +22,13 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
     "cadMonitorEnabled": false,
     "cadEmailUsername": "",
     "apikey": apiKey,
+    "agencies": [
+      {
+        name: "Tablet Command",
+        code: "TC",
+        personnelApiKey: personnelApiKey
+      }
+    ],
     "active": true,
     "modified_unix_date": 1492743603.514,
     "state": "CO",
@@ -105,6 +113,7 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
 
   return {
     apiKey: apiKey,
+    personnelApiKey: personnelApiKey,
     token: token,
     department: d,
     session: s,

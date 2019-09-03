@@ -33,6 +33,34 @@ module.exports = function (Department, Session, User, redisClient) {
     return redis.expireDepartmentByApiKey(apiKey, callback);
   };
 
+  var findDepartmentByPersonnelApiKey = function findDepartmentByPersonnelApiKey(personnelApiKey, callback) {
+    var cached = false;
+    return redis.findDepartmentByPersonnelApiKey(personnelApiKey, function (err, redisDepartment) {
+      if (err) {
+        return callback(err);
+      }
+
+      if (_.isObject(redisDepartment)) {
+        cached = true;
+        return callback(err, redisDepartment, cached);
+      }
+
+      return database.findDepartmentByPersonnelApiKey(personnelApiKey, function (err, dbDepartment) {
+        if (err) {
+          return callback(err);
+        }
+
+        return redis.storeDepartmentByPersonnelApiKey(personnelApiKey, dbDepartment, function (err) {
+          return callback(err, dbDepartment, cached);
+        });
+      });
+    });
+  };
+
+  var expireDepartmentByPersonnelApiKey = function expireDepartmentByPersonnelApiKey(personnelApiKey, callback) {
+    return redis.expireDepartmentByPersonnelApiKey(personnelApiKey, callback);
+  };
+
   var findSessionByToken = function findSessionByToken(token, callback) {
     var cached = false;
     return redis.findSessionByToken(token, function (err, rSession, rUser, rDepartment) {
@@ -113,7 +141,8 @@ module.exports = function (Department, Session, User, redisClient) {
   return {
     findDepartmentByApiKey: findDepartmentByApiKey,
     expireDepartmentByApiKey: expireDepartmentByApiKey,
-
+    findDepartmentByPersonnelApiKey: findDepartmentByPersonnelApiKey,
+    expireDepartmentByPersonnelApiKey: expireDepartmentByPersonnelApiKey,
     findSessionByToken: findSessionByToken,
     expireSessionByToken: expireSessionByToken
   };
