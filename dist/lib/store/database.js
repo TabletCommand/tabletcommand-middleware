@@ -8,12 +8,27 @@ module.exports = function (Department, Session, User) {
   var debug = require("debug")("tabletcommand-middleware:store:database");
 
   var fields = {
-    department: ["_id", "id", "agency", "incidentTypes", "rtsChannelPrefix", "rtsEnabled", "pushEnabled", "heartbeatEnabled", "cadBidirectionalEnabled", "cadMonitorMinutes", "cadMonitorEnabled", "cadEmailUsername", "apikey", "active", "department", "userContributionEnabled"]
+    department: ["_id", "id", "agency", "agencies", "incidentTypes", "rtsChannelPrefix", "rtsEnabled", "pushEnabled", "heartbeatEnabled", "cadBidirectionalEnabled", "cadMonitorMinutes", "cadMonitorEnabled", "cadEmailUsername", "apikey", "active", "department", "userContributionEnabled"]
   };
 
   var findDepartmentByApiKey = function findDepartmentByApiKey(apiKey, callback) {
     var query = {
       apikey: apiKey
+    };
+
+    debug("Department.findOne: " + JSON.stringify(query) + ".");
+    Department.findOne(query, fields.department, function findOneCallback(err, dbItem) {
+      var item = null;
+      if (_.isObject(dbItem)) {
+        item = JSON.parse(JSON.stringify(dbItem.toJSON()));
+      }
+      return callback(err, item);
+    });
+  };
+
+  var findDepartmentByPersonnelApiKey = function findDepartmentByPersonnelApiKey(personnelApiKey, callback) {
+    var query = {
+      "agencies.personnelApiKey": personnelApiKey
     };
 
     debug("Department.findOne: " + JSON.stringify(query) + ".");
@@ -75,6 +90,7 @@ module.exports = function (Department, Session, User) {
 
   return {
     findDepartmentByApiKey: findDepartmentByApiKey,
+    findDepartmentByPersonnelApiKey: findDepartmentByPersonnelApiKey,
 
     findSessionByToken: findSessionByToken,
     findUserByUserId: findUserByUserId,

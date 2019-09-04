@@ -32,6 +32,29 @@ module.exports = function (store) {
     return callback(apiKey);
   };
 
+  var detectPersonnelApiKey = function detectPersonnelApiKey(headers, query, callback) {
+    function extractPersonnelApiKey(obj) {
+      var personnelApiKey = "";
+      if (_.has(obj, "personnelApiKey")) {
+        personnelApiKey = obj["personnelApiKey"];
+      } else if (_.has(obj, "personnelapikey")) {
+        personnelApiKey = obj["personnelapikey"];
+      }
+      return personnelApiKey;
+    }
+
+    var personnelApiKey = "";
+    if (_.isObject(headers)) {
+      personnelApiKey = extractPersonnelApiKey(headers);
+    }
+
+    if (personnelApiKey === "" && _.isObject(query)) {
+      personnelApiKey = extractPersonnelApiKey(query);
+    }
+
+    return callback(personnelApiKey);
+  };
+
   var detectCookieSession = function detectCookieSession(cookies, callback) {
     var session = "";
 
@@ -59,6 +82,24 @@ module.exports = function (store) {
       }
 
       return store.findDepartmentByApiKey(apiKey, function (err, department) {
+        var hasDepartment = _.isObject(department) && helpers.isActive(department);
+        if (hasDepartment) {
+          req.department = department;
+          req.departmentLog = departmentForLogging(department);
+        }
+        return callback(err, department);
+      });
+    });
+  };
+
+  var authByPersonnelApiKey = function authByPersonnelApiKey(req, res, callback) {
+    return detectPersonnelApiKey(req.headers, req.query, function (personnelApiKey) {
+      debug("found personnel api key:" + personnelApiKey + ".");
+      if (personnelApiKey === "") {
+        return callback(null, null);
+      }
+
+      return store.findDepartmentByPersonnelApiKey(personnelApiKey, function (err, department) {
         var hasDepartment = _.isObject(department) && helpers.isActive(department);
         if (hasDepartment) {
           req.department = department;
@@ -97,12 +138,14 @@ module.exports = function (store) {
 
   return {
     detectApiKey: detectApiKey,
+    detectPersonnelApiKey: detectPersonnelApiKey,
     detectCookieSession: detectCookieSession,
     sessionCookieName: sessionCookieName,
 
     departmentForLogging: departmentForLogging,
 
     authByApiKey: authByApiKey,
+    authByPersonnelApiKey: authByPersonnelApiKey,
     authBySenecaCookie: authBySenecaCookie
   };
 };

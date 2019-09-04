@@ -10,6 +10,7 @@ module.exports = function(Department, Session, User) {
       "_id",
       "id",
       "agency",
+      "agencies",
       "incidentTypes",
       "rtsChannelPrefix",
       "rtsEnabled",
@@ -32,6 +33,21 @@ module.exports = function(Department, Session, User) {
     };
 
     debug(`Department.findOne: ${JSON.stringify(query)}.`);
+    Department.findOne(query, fields.department, function findOneCallback(err, dbItem) {
+      let item = null;
+      if (_.isObject(dbItem)) {
+        item = JSON.parse(JSON.stringify(dbItem.toJSON()));
+      }
+      return callback(err, item);
+    });
+  };
+
+  const findDepartmentByPersonnelApiKey = function findDepartmentByPersonnelApiKey(personnelApiKey, callback) {
+    const query = {
+      "agencies.personnelApiKey": personnelApiKey
+    };
+
+    debug("Department.findOne: " + JSON.stringify(query) + ".");
     Department.findOne(query, fields.department, function findOneCallback(err, dbItem) {
       let item = null;
       if (_.isObject(dbItem)) {
@@ -90,6 +106,7 @@ module.exports = function(Department, Session, User) {
 
   return {
     findDepartmentByApiKey: findDepartmentByApiKey,
+    findDepartmentByPersonnelApiKey: findDepartmentByPersonnelApiKey,
 
     findSessionByToken: findSessionByToken,
     findUserByUserId: findUserByUserId,

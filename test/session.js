@@ -16,6 +16,7 @@ const redisClient = require("redis-js");
 const store = require("../dist/lib/store")(models.Department, models.Session, models.User, redisClient);
 const data = require("./data")(mockgoose, mongoose, models, redisClient);
 const testApiKey = data.apiKey;
+const testPersonnelApiKey = data.personnelApiKey;
 const testToken = data.token;
 
 const session = require("../dist/lib/session")(store);
@@ -116,6 +117,93 @@ describe("Session", function() {
         assert.isObject(fakeReq.department);
         assert.deepEqual(department, fakeReq.department);
         assert.equal(data.department.apikey, department.apikey);
+        done();
+      });
+    });
+  });
+
+  context("detectPersonnelApiKey", function() {
+    it("resolved from headers 1/2", function(done) {
+      const fakeHeaders = {
+        personnelapikey: testPersonnelApiKey
+      };
+      session.detectPersonnelApiKey(fakeHeaders, null, function(foundKey) {
+        assert.equal(testPersonnelApiKey, foundKey);
+        done();
+      });
+    });
+
+    it("resolved from headers 2/2", function(done) {
+      const fakeHeaders = {
+        personnelApiKey: testPersonnelApiKey
+      };
+      session.detectPersonnelApiKey(fakeHeaders, null, function(foundKey) {
+        assert.equal(testPersonnelApiKey, foundKey);
+        done();
+      });
+    });
+
+    it("resolved from query 1/2", function(done) {
+      const fakeQuery = {
+        personnelapikey: testPersonnelApiKey
+      };
+      session.detectPersonnelApiKey(null, fakeQuery, function(foundKey) {
+        assert.equal(testPersonnelApiKey, foundKey);
+        done();
+      });
+    });
+
+    it("resolved from query 2/2", function(done) {
+      const fakeQuery = {
+        personnelApiKey: testPersonnelApiKey
+      };
+      session.detectPersonnelApiKey(null, fakeQuery, function(foundKey) {
+        assert.equal(testPersonnelApiKey, foundKey);
+        done();
+      });
+    });
+  });
+
+  context("authByPersonnelApiKey", function() {
+    it("not resolved if no personnel api key is present", function(done) {
+      let fakeReq = {};
+      let fakeRes = {};
+      session.authByPersonnelApiKey(fakeReq, fakeRes, function(err, department) {
+        assert.isNull(err);
+        assert.isNull(department);
+        assert.isNotObject(fakeReq.department);
+        done();
+      });
+    });
+
+    it("not resolved if invalid personnel api key", function(done) {
+      let fakeReq = {
+        headers: {
+          personnelapikey: "abc"
+        }
+      };
+      let fakeRes = {};
+      session.authByPersonnelApiKey(fakeReq, fakeRes, function(err, department) {
+        assert.isNull(err);
+        assert.isNull(department);
+        assert.isNotObject(fakeReq.department);
+        done();
+      });
+    });
+
+    it("resolved with correct personnel api key", function(done) {
+      let fakeReq = {
+        headers: {
+          personnelapikey: testPersonnelApiKey
+        }
+      };
+      let fakeRes = {};
+      session.authByPersonnelApiKey(fakeReq, fakeRes, function(err, department) {
+        assert.isNull(err);
+        assert.isObject(department);
+        assert.isObject(fakeReq.department);
+        assert.deepEqual(department, fakeReq.department);
+        assert.equal(data.personnelApiKey, department.agencies[0].personnelApiKey);
         done();
       });
     });

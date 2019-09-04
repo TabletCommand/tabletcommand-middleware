@@ -1,6 +1,6 @@
 {
   "name": "tabletcommand-middleware",
-  "version": "4.6.0",
+  "version": "4.7.0",
   "description": "Tablet Command Middleware and utils",
   "scripts": {
     "test": "./node_modules/gulp/bin/gulp.js",
@@ -45,6 +45,6 @@
     "mocha": "^3.2.0",
     "mockgoose": "^7.3.3",
     "redis-js": "^0.1.2",
-    "tabletcommand-backend-models": "^1.9.1"
+    "tabletcommand-backend-models": "^3.9.3"
   }
 }

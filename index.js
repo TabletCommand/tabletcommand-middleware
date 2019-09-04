@@ -8,6 +8,7 @@ var tokenSession = require("./dist/middleware/token-session");
 
 var senecaSession = require("./dist/middleware/seneca-session-redis");
 var apiKeySession = require("./dist/middleware/apikey-session-redis");
+var personnelApiKeySession = require("./dist/middleware/personnelapikey-session-redis");
 
 var metrics = require("./dist/middleware/metrics");
 var redis = require("./dist/lib/redis");
@@ -23,7 +24,8 @@ module.exports = {
     signup: signupSession,
     token: tokenSession,
     seneca: senecaSession,
-    apiKey: apiKeySession
+    apiKey: apiKeySession,
+    personnelApiKey: personnelApiKeySession
   },
   metrics: metrics,
   redis: redis,
