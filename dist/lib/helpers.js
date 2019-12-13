@@ -381,12 +381,21 @@ function headersToDevice(token, headers) {
   var richEnabled = itemIsTrue(headers, "x-tc-rich-enabled");
 
   var unixTime = new Date().valueOf() / 1000.0;
+  var drift = 0;
+  if (_.has(headers, "x-tc-device-time")) {
+    var deviceTime = parseFloat(headers["x-tc-device-time"]);
+    if (_.isFinite(deviceTime) && deviceTime > 0) {
+      drift = unixTime - deviceTime;
+    }
+  }
+
   var deviceInfo = {
     token: token,
     env: env,
     ver: appVersion,
     ua: userAgent,
     time: unixTime,
+    drift: drift,
     bundleIdentifier: bundleIdentifier,
     silentEnabled: silentEnabled,
     richEnabled: richEnabled
@@ -406,6 +415,7 @@ function logUserDevice(postUrl, authToken, user, session, headers) {
     osVer: info.osVer,
     ua: device.ua,
     t: device.time,
+    drift: device.drift,
     session: session.id
   };
 

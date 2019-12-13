@@ -391,16 +391,25 @@ function headersToDevice(token, headers) {
     bundleIdentifier = "com.simple-track.beta.Tablet-CMD";
   }
 
-  var silentEnabled = itemIsTrue(headers, "x-tc-silent-enabled");
-  var richEnabled = itemIsTrue(headers, "x-tc-rich-enabled");
+  const silentEnabled = itemIsTrue(headers, "x-tc-silent-enabled");
+  const richEnabled = itemIsTrue(headers, "x-tc-rich-enabled");
 
-  var unixTime = new Date().valueOf() / 1000.0;
-  var deviceInfo = {
+  const unixTime = new Date().valueOf() / 1000.0;
+  let drift = 0;
+  if (_.has(headers, "x-tc-device-time")) {
+    const deviceTime = parseFloat(headers["x-tc-device-time"]);
+    if (_.isFinite(deviceTime) && deviceTime > 0) {
+      drift = unixTime - deviceTime;
+    }
+  }
+
+  const deviceInfo = {
     token: token,
     env: env,
     ver: appVersion,
     ua: userAgent,
     time: unixTime,
+    drift: drift,
     bundleIdentifier: bundleIdentifier,
     silentEnabled: silentEnabled,
     richEnabled: richEnabled
@@ -409,10 +418,10 @@ function headersToDevice(token, headers) {
 }
 
 function logUserDevice(postUrl, authToken, user, session, headers) {
-  var device = headersToDevice("", headers);
-  var info = extractInfoFromDevice(device);
+  const device = headersToDevice("", headers);
+  const info = extractInfoFromDevice(device);
 
-  var item = {
+  const item = {
     userId: user.id,
     departmentId: user.departmentId,
     nick: user.nick,
@@ -420,12 +429,13 @@ function logUserDevice(postUrl, authToken, user, session, headers) {
     osVer: info.osVer,
     ua: device.ua,
     t: device.time,
+    drift: device.drift,
     session: session.id
   };
 
-  var filter = [];
+  const filter = [];
 
-  var shouldFilter = false;
+  const shouldFilter = false;
   if (shouldFilter && _.contains(filter, item.appVer)) {
     return;
   }
@@ -490,7 +500,7 @@ module.exports = {
   cleanupUser: cleanupUser,
   extractInfoFromDevice: extractInfoFromDevice,
   headersToDevice: headersToDevice,
-  logUserDevice: logUserDevice,
+  logUserDevice,
   configureMomentOpts: configureMomentOpts,
   requestPost: requestPost
 };
