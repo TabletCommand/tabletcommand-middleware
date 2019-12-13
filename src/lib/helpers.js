@@ -221,19 +221,19 @@ var isItemValidOnMap = function isItemValidOnMap(item) {
   return true;
 };
 
-var stripSessionFields = function stripSessionFields(value, key) {
+function stripSessionFields(value, key) {
   var fields = ["pass", "salt", "when"];
   var skipFields = _.isString(key) && _.includes(fields, key.toLowerCase());
   var filterSeneca = _.isString(key) && _.trimRight(key, "$") !== key;
 
   return filterSeneca || skipFields;
-};
+}
 
-var cleanupUser = function cleanupUser(user) {
+function cleanupUser(user) {
   return _.omit(user, stripSessionFields);
-};
+}
 
-var resolveUser = function resolveUser(args, callback) {
+function resolveUser(args, callback) {
   var hasSeneca = _.isObject(args) &&
     _.isObject(args.req$) &&
     _.isObject(args.req$.seneca);
@@ -279,7 +279,7 @@ var resolveUser = function resolveUser(args, callback) {
   return callback(null, user, session);
 };
 
-var resolveLogin = function resolveLogin(args, callback) {
+function resolveLogin(args, callback) {
   if (!_.isObject(args) ||
     !_.isObject(args.req$) ||
     !_.isObject(args.req$.seneca) ||
@@ -291,9 +291,9 @@ var resolveLogin = function resolveLogin(args, callback) {
 
   var login = cleanupUser(args.req$.seneca.login);
   return callback(null, login);
-};
+}
 
-var getClosedOrDate = function getClosedOrDate() {
+function getClosedOrDate() {
   var nowForClosedDateUnixDate = moment().valueOf() / 1000.0;
   var closedOr = [{
     closed_unix_date: 0
@@ -304,9 +304,9 @@ var getClosedOrDate = function getClosedOrDate() {
   }];
 
   return closedOr;
-};
+}
 
-var extractInfoFromDevice = function extractInfoFromDevice(device) {
+function extractInfoFromDevice(device) {
   var maxDaysSinceEvent = 120;
   var info = {};
   info.appVer = "Unknown";
@@ -363,9 +363,9 @@ var extractInfoFromDevice = function extractInfoFromDevice(device) {
   }
 
   return info;
-};
+}
 
-var headersToDevice = function headersToDevice(token, headers) {
+function headersToDevice(token, headers) {
   var env = "production";
   if (_.has(headers, "x-tc-apn-environment") &&
     headers["x-tc-apn-environment"] === "beta") {
@@ -394,21 +394,21 @@ var headersToDevice = function headersToDevice(token, headers) {
   var silentEnabled = itemIsTrue(headers, "x-tc-silent-enabled");
   var richEnabled = itemIsTrue(headers, "x-tc-rich-enabled");
 
-  var unixtime = moment().valueOf() / 1000.0;
+  var unixTime = new Date().valueOf() / 1000.0;
   var deviceInfo = {
     token: token,
     env: env,
     ver: appVersion,
     ua: userAgent,
-    time: unixtime,
+    time: unixTime,
     bundleIdentifier: bundleIdentifier,
     silentEnabled: silentEnabled,
     richEnabled: richEnabled
   };
   return deviceInfo;
-};
+}
 
-var logUserDevice = function logUserDevice(postUrl, authToken, user, session, headers) {
+function logUserDevice(postUrl, authToken, user, session, headers) {
   var device = headersToDevice("", headers);
   var info = extractInfoFromDevice(device);
 
@@ -431,9 +431,9 @@ var logUserDevice = function logUserDevice(postUrl, authToken, user, session, he
   }
 
   return requestPost(postUrl, authToken, item);
-};
+}
 
-var requestPost = function requestPost(postUrl, authToken, item, callback) {
+function requestPost(postUrl, authToken, item, callback) {
   if (!_.isFunction(callback)) {
     callback = function defaultCallback() {
       // Empty
@@ -448,9 +448,9 @@ var requestPost = function requestPost(postUrl, authToken, item, callback) {
     }
   };
   return request(reqOpts, callback);
-};
+}
 
-var configureMomentOpts = function configureMomentOpts() {
+function configureMomentOpts() {
   moment.updateLocale("en", {
     relativeTime: {
       future: "in %s",
@@ -469,7 +469,7 @@ var configureMomentOpts = function configureMomentOpts() {
       yy: "%dy"
     }
   });
-};
+}
 
 module.exports = {
   calculateOffsetFromTime: calculateOffsetFromTime,
