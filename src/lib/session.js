@@ -6,10 +6,10 @@ const _ = require("lodash");
 const helpers = require("./helpers");
 const debug = require("debug")("tabletcommand-middleware:session");
 
-module.exports = function(store) {
+module.exports = function libSession(store) {
   const sessionCookieName = "seneca-login";
 
-  const detectApiKey = function detectApiKey(headers, query, callback) {
+  function detectApiKey(headers, query, callback) {
     function extractApiKey(obj) {
       let apiKey = "";
       if (_.has(obj, "apiKey")) {
@@ -30,9 +30,9 @@ module.exports = function(store) {
     }
 
     return callback(apiKey);
-  };
+  }
 
-  const detectPersonnelApiKey = function detectPersonnelApiKey(headers, query, callback) {
+  function detectPersonnelApiKey(headers, query, callback) {
     function extractPersonnelApiKey(obj) {
       let personnelApiKey = "";
       if (_.has(obj, "personnelApiKey")) {
@@ -53,7 +53,7 @@ module.exports = function(store) {
     }
 
     return callback(personnelApiKey);
-  };
+  }
 
   const detectCookieSession = function detectCookieSession(cookies, callback) {
     let session = "";
@@ -76,7 +76,7 @@ module.exports = function(store) {
     return item;
   };
 
-  const authByApiKey = function authByApiKey(req, res, callback) {
+  function authByApiKey(req, res, callback) {
     return detectApiKey(req.headers, req.query, function(apiKey) {
       debug(`found api key:${apiKey}.`);
       if (apiKey === "") {
@@ -92,9 +92,9 @@ module.exports = function(store) {
         return callback(err, department);
       });
     });
-  };
+  }
 
-  const authByPersonnelApiKey = function authByPersonnelApiKey(req, res, callback) {
+  function authByPersonnelApiKey(req, res, callback) {
     return detectPersonnelApiKey(req.headers, req.query, function(personnelApiKey) {
       debug(`found personnel api key:${personnelApiKey}.`);
       if (personnelApiKey === "") {
@@ -110,9 +110,9 @@ module.exports = function(store) {
         return callback(err, department);
       });
     });
-  };
+  }
 
-  const authBySenecaCookie = function authBySenecaCookie(req, res, callback) {
+  function authBySenecaCookie(req, res, callback) {
     return detectCookieSession(req.cookies, function(token) {
       if (token === "") {
         return callback(null, null, null, null);
@@ -136,7 +136,7 @@ module.exports = function(store) {
         return callback(err, session, user, department);
       });
     });
-  };
+  }
 
   return {
     detectApiKey: detectApiKey,

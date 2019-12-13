@@ -45,6 +45,6 @@
     "mocha": "^3.2.0",
     "mockgoose": "^7.3.3",
     "redis-js": "^0.1.2",
-    "tabletcommand-backend-models": "^3.9.3"
+    "tabletcommand-backend-models": "^3.10.2"
   }
 }

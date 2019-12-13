@@ -23,6 +23,7 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
     "cadEmailUsername": "",
     "apikey": apiKey,
     "agencies": [
+      // TODO: Currently, the models do not save this item. Need to update models to nwer version.
       {
         name: "Tablet Command",
         code: "TC",
@@ -70,7 +71,7 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
     "isPro": true
   };
 
-  const prepareTestData = function prepareTestData(callback) {
+  function prepareTestData(callback) {
     let testDepartment = models.Department(d);
     testDepartment.save(function(err, result) {
       if (err) {
@@ -89,7 +90,7 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
         });
       });
     });
-  };
+  }
 
   const afterEach = function afterEach(callback) {
     mockgoose.helper.reset().then(function() {

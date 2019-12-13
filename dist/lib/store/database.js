@@ -26,7 +26,7 @@ module.exports = function (Department, Session, User) {
     });
   };
 
-  var findDepartmentByPersonnelApiKey = function findDepartmentByPersonnelApiKey(personnelApiKey, callback) {
+  function findDepartmentByPersonnelApiKey(personnelApiKey, callback) {
     var query = {
       "agencies.personnelApiKey": personnelApiKey
     };
@@ -39,7 +39,7 @@ module.exports = function (Department, Session, User) {
       }
       return callback(err, item);
     });
-  };
+  }
 
   var findSessionByToken = function findSessionByToken(token, callback) {
     var query = {

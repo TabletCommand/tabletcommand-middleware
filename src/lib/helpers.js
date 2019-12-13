@@ -5,7 +5,7 @@ var moment = require("moment-timezone");
 var debug = require("debug")("massive-tyrion:helpers");
 var request = require("request");
 
-var calculateOffsetFromTime = function calculateOffsetFromTime(time) {
+function calculateOffsetFromTime(time) {
   var serverUnix = new Date().valueOf() / 1000;
   var offset = serverUnix - time;
   return {
@@ -13,9 +13,9 @@ var calculateOffsetFromTime = function calculateOffsetFromTime(time) {
     server: serverUnix,
     received: time
   };
-};
+}
 
-var fixObjectBooleanKey = function fixObjectBooleanKey(obj, key, defaultValue) {
+function fixObjectBooleanKey(obj, key, defaultValue) {
   if (!_.has(obj, key)) {
     obj[key] = defaultValue;
   }
@@ -28,9 +28,9 @@ var fixObjectBooleanKey = function fixObjectBooleanKey(obj, key, defaultValue) {
   } else if (falseIsh) {
     obj[key] = false;
   }
-};
+}
 
-var fixObjectNumberKey = function fixObjectNumberKey(obj, key, defaultValue) {
+function fixObjectNumberKey(obj, key, defaultValue) {
   if (!_.has(obj, key)) {
     obj[key] = defaultValue;
     return;
@@ -39,15 +39,15 @@ var fixObjectNumberKey = function fixObjectNumberKey(obj, key, defaultValue) {
   if (!_.isNumber(obj[key]) && _.isNumber(parseInt(obj[key]))) {
     obj[key] = parseInt(obj[key]);
   }
-};
+}
 
-var fixObjectStringKey = function fixObjectStringKey(obj, key, defaultValue) {
+function fixObjectStringKey(obj, key, defaultValue) {
   if (!_.has(obj, key)) {
     obj[key] = defaultValue;
   }
-};
+}
 
-var sortWebListsForCollection = function sortWebListsForCollection(list, collectionName) {
+function sortWebListsForCollection(list, collectionName) {
   if (!_.isArray(list)) {
     return list;
   }
@@ -81,9 +81,9 @@ var sortWebListsForCollection = function sortWebListsForCollection(list, collect
 
   // Default, return the same list
   return list;
-};
+}
 
-var joinParentChildCollections = function(parents, childs, parentApiId, parentLocalId, parentName, parentUuid, parentDest) {
+function joinParentChildCollections(parents, childs, parentApiId, parentLocalId, parentName, parentUuid, parentDest) {
   var mapLocalIdItems = _.map(_.filter(childs, function(item) {
     return _.has(item, parentLocalId) && !_.has(item, parentApiId);
   }), function(item) {
@@ -142,9 +142,9 @@ var joinParentChildCollections = function(parents, childs, parentApiId, parentLo
   });
 
   return parents;
-};
+}
 
-var itemIsTrue = function itemIsTrue(item, key) {
+function itemIsTrue(item, key) {
   if (_.isUndefined(item) || _.isNull(item)) {
     return false;
   }
@@ -157,30 +157,30 @@ var itemIsTrue = function itemIsTrue(item, key) {
   var itemOne = item[key] === 1 || item[key] === "1";
 
   return itemTrue || itemOne;
-};
+}
 
-var isAdmin = function isAdmin(item) {
+function isAdmin(item) {
   return itemIsTrue(item, "admin");
-};
+}
 
-var isSuper = function isSuper(item) {
+function isSuper(item) {
   return itemIsTrue(item, "superuser");
-};
+}
 
-var isActive = function isActive(item) {
+function isActive(item) {
   return itemIsTrue(item, "active");
-};
+}
 
-var verifyJson = function(req, res, buf) {
+function verifyJson(req, res, buf) {
   try {
     JSON.parse(buf);
   } catch (err) {
     var message = "Invalid JSON:" + buf;
     console.log(message);
   }
-};
+}
 
-var makeId = function makeId(length) {
+function makeId(length) {
   var text = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -189,9 +189,9 @@ var makeId = function makeId(length) {
   }
 
   return text;
-};
+}
 
-var hasFeature = function hasFeature(dept, feature) {
+function hasFeature(dept, feature) {
   var value = 0;
 
   var hasKey = !_.isUndefined(dept[feature]) && !_.isNull(dept[feature]);
@@ -202,9 +202,9 @@ var hasFeature = function hasFeature(dept, feature) {
     value = 1;
   }
   return value;
-};
+}
 
-var isItemValidOnMap = function isItemValidOnMap(item) {
+function isItemValidOnMap(item) {
   var invalidDegreeLimit = 5.0;
 
   var parsedLat = parseInt(item.latitude);
@@ -219,7 +219,7 @@ var isItemValidOnMap = function isItemValidOnMap(item) {
   }
 
   return true;
-};
+}
 
 function stripSessionFields(value, key) {
   var fields = ["pass", "salt", "when"];
