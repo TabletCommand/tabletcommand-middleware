@@ -6,26 +6,30 @@ const assert = require("chai").assert;
 
 const mongoose = require("mongoose");
 mongoose.Promise = require("bluebird");
-const models = require("tabletcommand-backend-models");
+const modelsModule = require("tabletcommand-backend-models");
 
 let Mockgoose = require("mockgoose").Mockgoose;
 let mockgoose = new Mockgoose(mongoose);
 
 const redisClient = require("redis-js");
+let store;
+let data;
 
-const store = require("../dist/lib/store")(models.Department, models.Session, models.User, redisClient);
-const data = require("./data")(mockgoose, mongoose, models, redisClient);
-
-const testApiKey = data.apiKey;
-const testToken = data.token;
+let testApiKey;
+let testToken;
 
 describe("Store", function() {
-  beforeEach(function(done) {
-    data.beforeEach(done);
+  beforeEach(async function() {
+    const { models } = await modelsModule.connect("mongodb://127.0.0.1:27017/TestingDB", { useUnifiedTopology: true, useNewUrlParser: true });
+    store = require("../dist/lib/store")(models.Department, models.Session, models.User, redisClient);
+    data = require("./data")(mockgoose, mongoose, models, redisClient);
+    testApiKey = data.apiKey;
+    testToken = data.token;
+    await data.beforeEach();
   });
 
-  afterEach(function(done) {
-    data.afterEach(done);
+  afterEach(async function() {
+    await data.afterEach();
   });
 
   it("isMocked", (done) => {

@@ -50,7 +50,8 @@ const redisOnConnect = function redisOnConnect(config, startTime, mongoose, mong
     console.log(`Redis connected after ${(new Date() - startTime)}ms.`);
 
     mongoose.connect(config.mongoUrl, {
-      useMongoClient: true
+      useUnifiedTopology: true,
+      useNewUrlParser: true
     });
     mongoose.connection.on("error", mongooseOnError);
     mongoose.connection.on("disconnected", mongooseOnDisconnected);

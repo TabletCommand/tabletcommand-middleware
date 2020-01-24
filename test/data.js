@@ -71,45 +71,26 @@ module.exports = function(mockgoose, mongoose, models, redisClient) {
     "isPro": true
   };
 
-  function prepareTestData(callback) {
+  async function prepareTestData(models) {
     let testDepartment = models.Department(d);
-    testDepartment.save(function(err, result) {
-      if (err) {
-        return callback(err);
-      }
+    await testDepartment.save();
 
-      let testSession = models.Session(s);
-      testSession.save(function(err, result) {
-        if (err) {
-          return callback(err);
-        }
+    let testSession = models.Session(s);
+    await testSession.save();
 
-        let testUser = models.User(u);
-        testUser.save(function(err, result) {
-          return callback(err, result);
-        });
-      });
-    });
+    let testUser = models.User(u);
+    await testUser.save();
   }
 
-  const afterEach = function afterEach(callback) {
-    mockgoose.helper.reset().then(function() {
-      redisClient.flushall(function() {
-        callback();
-      });
-    });
+  const afterEach = async function afterEach() {
+    await mockgoose.helper.reset();
+    await new Promise((resolve, reject) => redisClient.flushall(() => resolve()));
   };
 
-  const beforeEach = function beforeEach(callback) {
-    mockgoose.prepareStorage().then(function() {
-      mongoose.connect("mongodb://127.0.0.1:27017/TestingDB", {
-        useMongoClient: true // this option silents the warning, but does not cleanup the data
-      }, function(err) {
-        prepareTestData(function() {
-          callback(err);
-        });
-      });
-    });
+  const beforeEach = async function beforeEach() {
+    await mongoose.connection.db.dropDatabase();
+    await mockgoose.prepareStorage();
+    await prepareTestData(models);
   };
 
   return {

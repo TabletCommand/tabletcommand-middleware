@@ -1,6 +1,6 @@
 {
   "name": "tabletcommand-middleware",
-  "version": "4.7.1",
+  "version": "5.0.0",
   "description": "Tablet Command Middleware and utils",
   "scripts": {
     "test": "./node_modules/gulp/bin/gulp.js",
@@ -20,7 +20,7 @@
     "lodash": "^4.17.4",
     "moment-timezone": "^0.5.13",
     "mongodb-uri": "^0.9.7",
-    "mongoose": "^4.1.10",
+    "mongoose": "^5.8.9",
     "redis": "^2.4.2",
     "request": "~2.79.0"
   },
@@ -45,6 +45,6 @@
     "mocha": "^3.2.0",
     "mockgoose": "^7.3.3",
     "redis-js": "^0.1.2",
-    "tabletcommand-backend-models": "^3.10.2"
+    "tabletcommand-backend-models": "^4.6.3"
   }
 }
