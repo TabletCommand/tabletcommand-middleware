@@ -1,3 +1,5 @@
 # tabletcommand-middleware
 
-Tablet Command middleware and helpers
+Tablet Command middleware and helpers.
+
+Deprecated.
